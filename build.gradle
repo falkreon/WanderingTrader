@@ -16,6 +16,9 @@ targetCompatibility = 8;
 dependencies {
 	implementation 'com.google.guava:guava:28.2-jre';
 	implementation 'blue.endless:jankson:1.2.0-78';
+	implementation 'blue.endless:splinter:0.0.1-1';
+	implementation 'net.sf.jopt-simple:jopt-simple:6.0-alpha-3';
+	implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.1_beta';
 }
 
 license {
