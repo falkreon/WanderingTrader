@@ -1,5 +1,8 @@
 package blue.endless.wtrader;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +21,9 @@ public class ModInfo {
 	
 	/** A string identifier, all lower-case, which indicates the type of REST query response to expect. Usually "curse". */
 	public String provider;
+	/** An implementation-specific string which the provider can use to uniquely identify the mod */
+	public String providerId;
+	
 	/** A URI which can retrieve project and update information to populate this object. */
 	public String fetchUrl;
 	
@@ -30,8 +36,13 @@ public class ModInfo {
 		/** The version number or flavor. Usually a semVer string, but is not required to be. */
 		public String number;
 		
+		public String fileName;
+		
+		/** Milliseconds from the epoch of the date *published*, if possible. Failing that, the date *created*. */
+		public long timestamp;
+		
 		/** A URL where this version of this mod can be downloaded. */
-		public String downloadURL;
+		public String downloadUrl;
 		
 		/**
 		 * The modloader(s) used to load this version of the mod. Usually a single-item list containing either
@@ -44,5 +55,9 @@ public class ModInfo {
 		
 		/** A list of dependencies _by_their_cache_name_ and version. */
 		public List<String> dependencies = new ArrayList<>();
+		
+		public InputStream download() throws IOException {
+			return new URL(downloadUrl).openStream();
+		}
 	}
 }

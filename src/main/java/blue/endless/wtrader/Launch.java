@@ -1,15 +1,19 @@
 package blue.endless.wtrader;
 
+import blue.endless.wtrader.provider.cache.CacheModProvider;
+import blue.endless.wtrader.provider.curse.CurseModProvider;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 public class Launch {
 	public static void main(String[] args) {
+		ModProvider.register("cache", CacheModProvider.instance());
+		ModProvider.register("curse", CurseModProvider.instance());
+		
 		OptionParser optionParser = new OptionParser();
 		optionParser.accepts("gui");
 		
 		OptionSet options = optionParser.parse(args);
-		
 		
 		if (options.has("gui")) {
 			TraderGui gui = new TraderGui();
@@ -17,8 +21,6 @@ public class Launch {
 		} else {
 			System.out.println("Running in console / headless mode. Use --gui to enable graphical mode.");
 		}
-		
-		//RestQuery.of("https://addons-ecs.forgesvc.net/api/v2/addon/222880", it->System.out.println(it.toJson()), Throwable::printStackTrace);
 	}
 }
 
