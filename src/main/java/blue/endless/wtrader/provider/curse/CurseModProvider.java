@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonElement;
@@ -24,8 +26,8 @@ import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
 import blue.endless.jankson.api.SyntaxError;
 import blue.endless.wtrader.ModInfo;
-import blue.endless.wtrader.ModProvider;
 import blue.endless.wtrader.RestQuery;
+import blue.endless.wtrader.provider.ModProvider;
 
 public class CurseModProvider extends ModProvider {
 	private static CurseModProvider INSTANCE;
@@ -80,6 +82,10 @@ public class CurseModProvider extends ModProvider {
 		}
 	}
 	
+	public @Nullable String getCacheId(String curseAddonId) {
+		return idCache.get(curseAddonId);
+	}
+	
 	public static CurseModProvider instance() {
 		if (INSTANCE==null) {
 			INSTANCE = new CurseModProvider();
@@ -99,7 +105,6 @@ public class CurseModProvider extends ModProvider {
 			if (jsonElem instanceof JsonArray) {
 				JsonArray results = (JsonArray) jsonElem;
 				
-				boolean saveCache = false;
 				for(JsonElement result : results) {
 					if (result instanceof JsonObject) {
 						Integer categoryId = ((JsonObject) result).recursiveGet(Integer.class, "categorySection.id");
@@ -107,14 +112,8 @@ public class CurseModProvider extends ModProvider {
 						
 						ModInfo info = jankson.fromJson((JsonObject) result, CurseModInfo.class).toModInfo();
 						searchResults.add(info);
-						if (!idCache.containsKey(info.providerId)) {
-							idCache.put(info.providerId, info.id);
-							saveCache = true;
-						}
 					}
 				}
-				
-				if (saveCache) saveCache();
 			}
 			
 		} catch (IOException error) {
@@ -123,36 +122,28 @@ public class CurseModProvider extends ModProvider {
 		
 		return searchResults;
 	}
-
 	
-
-	@Override
-	public List<ModInfo> update(List<ModInfo> mods) throws IOException, IllegalArgumentException {
+	
+	
+	//@Override
+	//public ModInfo update(ModInfo mod) throws IOException {
 		
-		List<ModInfo> updated = new ArrayList<>();
+	//	return fetch(mod.providerId);
+		/*
+		JsonElement elem = RestQuery.start(mod.fetchUrl); //"https://addons-ecs.forgesvc.net/api/v2/addon/"+mod.fetchURL);
 		
-		for(ModInfo mod : mods) {
-			try {
-				JsonElement elem = RestQuery.start(mod.fetchUrl); //"https://addons-ecs.forgesvc.net/api/v2/addon/"+mod.fetchURL);
-				
-				if (elem instanceof JsonObject) {
-					Integer categoryId = ((JsonObject) elem).recursiveGet(Integer.class, "categorySection.id");
-					if (categoryId==null || categoryId.intValue()!=8) continue;
-					
-					System.out.println(elem.toJson(JsonGrammar.JSON5));
-					
-					ModInfo modInfo = Jankson.builder().build().fromJson((JsonObject) elem, CurseModInfo.class).toModInfo();
-				} else {
-					
-				}
-				
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		// TODO Auto-generated method stub
-		return null;
-	}
+		if (elem instanceof JsonObject) {
+			Integer categoryId = ((JsonObject) elem).recursiveGet(Integer.class, "categorySection.id");
+			if (categoryId==null || categoryId.intValue()!=8) throw new IOException("Server responded with a non-mod object (categoryId="+categoryId+").");
+			
+			System.out.println(elem.toJson(JsonGrammar.JSON5));
+			
+			ModInfo modInfo = Jankson.builder().build().fromJson((JsonObject) elem, CurseModInfo.class).toModInfo();
+			return modInfo;
+		} else {
+			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
+		}*/
+	//}
 	
 	/**
 	 * Tests equality for simple data objects which don't define their own equals() method, by

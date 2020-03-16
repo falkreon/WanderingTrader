@@ -1,4 +1,4 @@
-package blue.endless.wtrader;
+package blue.endless.wtrader.provider;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+
+import blue.endless.wtrader.ModInfo;
 
 public abstract class ModProvider {
 	private static Map<String, ModProvider> providers = new HashMap<>();
@@ -40,17 +42,13 @@ public abstract class ModProvider {
 	
 	/**
 	 * Performs a query on a full or partial ModInfo, producing completed or updated information.
-	 * If the information hasn't changed, the provider MAY omit it from the returned list. If the
-	 * query indicates that changes happened or more complete information is available than was
-	 * provided, it MUST be included in the returned list.
 	 * 
-	 * @param mods The ModInfo(s) to update. The provider SHOULD batch queries if it is able to.
-	 * @throws IOException if a network error occurs or the resources are unavailable
-	 * @return A list of ModInfos representing updated information.
+	 * @param mod The ModInfo to update.
+	 * @throws IOException if a network error occurs or the resource is unavailable
 	 */
-	@Nonnull
-	public abstract List<ModInfo> update(@Nonnull List<ModInfo> mods) throws IOException;
-	
+	public ModInfo update(@Nonnull ModInfo mod) throws IOException {
+		return fetch(mod.providerId);
+	}
 	
 	@Nonnull
 	public abstract ModInfo fetch(String providerId) throws IOException;

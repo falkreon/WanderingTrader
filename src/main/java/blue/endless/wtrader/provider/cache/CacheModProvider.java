@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.api.SyntaxError;
 import blue.endless.wtrader.ModInfo;
-import blue.endless.wtrader.ModProvider;
+import blue.endless.wtrader.provider.ModProvider;
 
 public final class CacheModProvider extends ModProvider {
 	private static CacheModProvider INSTANCE;
@@ -47,10 +47,9 @@ public final class CacheModProvider extends ModProvider {
 	}
 
 	@Override
-	public List<ModInfo> update(List<ModInfo> mods) throws IOException {
-		//TODO: Maybe fetch each one through their assigned provider and update it?
-		//For now, just report no changes, because the cache doesn't provide *new* information.
-		return new ArrayList<>();
+	public ModInfo update(ModInfo mod) throws IOException {
+		return mod;
+		//the cache doesn't provide *new* information.
 	}
 	
 	private @Nullable ModInfo fetch(File f) {

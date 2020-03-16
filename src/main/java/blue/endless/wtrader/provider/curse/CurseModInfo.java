@@ -1,5 +1,6 @@
 package blue.endless.wtrader.provider.curse;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.provider.cache.CacheModProvider;
 
 public class CurseModInfo {
 	/** The unique numeric ID for the mod */
@@ -143,6 +145,23 @@ public class CurseModInfo {
 					version.loaders.add("fabric");
 					allLoaders.add("fabric");
 				}
+			}
+			
+			//Magic Launcher and its ilk
+			if (allLoaders.isEmpty() && release.fileName.endsWith(".zip")) {
+				allLoaders.add("jarmod");
+			}
+			
+			for(Dependency dependency : release.dependencies) {
+				ModInfo.Dependency wtDep = new ModInfo.Dependency();
+				wtDep.providerFileId = dependency.fileId;
+				wtDep.providerModId = dependency.addonId;
+				
+				//If it's already in the cache, grab it
+				wtDep.cacheId = CurseModProvider.instance().getCacheId(dependency.addonId); //Will overwrite null with null if it's not in the cache
+				//We don't have a reverse-search of fileId->version but that's not super important for the purpose of resolving mods
+				
+				version.dependencies.add(wtDep);
 			}
 			
 			result.versions.add(version);

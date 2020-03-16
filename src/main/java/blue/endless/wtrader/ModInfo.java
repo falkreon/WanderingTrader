@@ -54,10 +54,23 @@ public class ModInfo {
 		public List<String> loaders = new ArrayList<>();
 		
 		/** A list of dependencies _by_their_cache_name_ and version. */
-		public List<String> dependencies = new ArrayList<>();
+		public List<Dependency> dependencies = new ArrayList<>();
 		
 		public InputStream download() throws IOException {
 			return new URL(downloadUrl).openStream();
 		}
+	}
+	
+	public static class Dependency {
+		/* The local id for the mod */
+		public String cacheId;
+		/* The full version name for this file, in the same format that appears in a ModInfo.Version.number */
+		public String version;
+		/* The *mod Id* that can be fetched from this mod's provider */
+		public String providerModId;
+		/* A fileId such that this mod's provider can fetch the exact file information */
+		public String providerFileId;
+		
+		public String downloadUrl;
 	}
 }

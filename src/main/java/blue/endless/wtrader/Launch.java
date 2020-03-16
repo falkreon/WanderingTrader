@@ -1,5 +1,6 @@
 package blue.endless.wtrader;
 
+import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
 import joptsimple.OptionParser;

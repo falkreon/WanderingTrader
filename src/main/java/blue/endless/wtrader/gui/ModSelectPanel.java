@@ -22,8 +22,8 @@ import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
 import blue.endless.wtrader.ModInfo;
-import blue.endless.wtrader.ModProvider;
 import blue.endless.wtrader.RestQuery;
+import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.curse.CurseModInfo;
 
 public class ModSelectPanel extends JPanel {
