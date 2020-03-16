@@ -1,5 +1,9 @@
 package blue.endless.wtrader;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
@@ -16,11 +20,32 @@ public class Launch {
 		
 		OptionSet options = optionParser.parse(args);
 		
-		if (options.has("gui")) {
+		try {
+			ModInfo info = ModProvider.get("curse").fetch("69163");
+			ModInfo.Version version = info.versions.get(0);
+			System.out.println("Resolving dependency graph for "+version.fileName);
+			ArrayList<ModInfo.Version> modList = new ArrayList<>();
+			modList.add(version);
+			Collection<ModInfo.Version> resolved = DependencyResolver.resolve(modList, "1.12.2");
+			
+			System.out.println();
+			System.out.println("ResolvedMods {");
+			for(ModInfo.Version resolvedItem : resolved) {
+				System.out.println("    "+resolvedItem.downloadUrl);
+			}
+			System.out.println("}");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+		if (options.has("nogui")) {
+			System.out.println("Running in console / headless mode.");
+		} else {
+			System.out.println("Running in gui mode. Use --nogui for headless / console mode.");
 			TraderGui gui = new TraderGui();
 			gui.setVisible(true);
-		} else {
-			System.out.println("Running in console / headless mode. Use --gui to enable graphical mode.");
 		}
 	}
 }

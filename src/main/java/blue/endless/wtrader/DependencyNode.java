@@ -12,6 +12,6 @@ import java.util.List;
  */
 public class DependencyNode {
 	public DependencyNode parent;
-	ModInfo mod;
+	ModInfo.Version version;
 	public List<DependencyNode> children = new ArrayList<>();
 }

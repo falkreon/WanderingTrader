@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.ModInfo;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 
@@ -77,6 +79,44 @@ public class CurseModInfo {
 		public String alternateFileId;
 		public List<Dependency> dependencies;
 		public List<Module> modules;
+		public List<String> gameVersion;
+		
+		public ModInfo.Version toVersion() {
+			ModInfo.Version version = new ModInfo.Version();
+			version.modId = id;
+			version.fileName = fileName;
+			version.downloadUrl = downloadUrl;
+			version.timestamp = Instant.parse(fileDate).toEpochMilli();
+			if (gameVersion.size()==1) {
+				version.mcVersion = gameVersion.get(0);
+			}
+			
+			version.number = CurseModProvider.extractModVersion(fileName, displayName);
+			
+			for(Module module: modules) {
+				if (module.foldername!=null && module.foldername.equals("mcmod.info")) {
+					version.loaders.add("forge");
+				} else if (module.foldername!=null && module.foldername.equals("fabric.mod.json")) {
+					version.loaders.add("fabric");
+				}
+			}
+			
+			//Magic Launcher and its ilk
+			if (version.loaders.isEmpty() && fileName.endsWith(".zip")) {
+				version.loaders.add("jarmod");
+			}
+			
+			for(Dependency dependency : dependencies) {
+				if (dependency.type!=3) continue;
+				ModInfo.Dependency wtDep = new ModInfo.Dependency();
+				wtDep.provider = "curse";
+				wtDep.providerModId = dependency.addonId;
+				
+				version.dependencies.add(wtDep);
+			}
+			
+			return version;
+		}
 	}
 	
 	public static class Module {
@@ -86,10 +126,10 @@ public class CurseModInfo {
 	}
 	
 	public static class Dependency {
-		String id;
+		//String id;
 		String addonId;
 		int type;
-		String fileId;
+		//String fileId;
 	}
 	
 	public ModInfo toModInfo() {
@@ -112,62 +152,14 @@ public class CurseModInfo {
 		result.fetchUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/"+id;
 		result.description = summary;
 		
-		Set<String> allLoaders = new HashSet<>();
-		
 		for(Release release : latestFiles) {
-			ModInfo.Version version = new ModInfo.Version();
-			version.fileName = release.fileName;
-			version.downloadUrl = release.downloadUrl;
-			version.number = release.displayName; //But only as a last resort!
-			version.timestamp = Instant.parse(release.fileDate).toEpochMilli();
-			
-			//This is a much better heuristic, since this is how gradle and maven expect to package artifacts and shuttle them around
-			//Note that this will necessarily capture the artifact *classifier* as part of the version. We have no way of separating them.
-			//Some modders put their versions as "MC1.12.2-1.0.8", some use "1.0.8-MC1.12.2", and some use the actually-parseable semver "1.0.8+MC1.12.2".
-			//Some omit the minecraft version. Someone could get really funny and use "xenial-xerus" as their version name, entirely unnumbered.
-			//This is all part of the Flavor Dimension problem ( see https://developer.android.com/studio/build/build-variants#product-flavors )
-			//So we will refuse to parse version strings, and instead do lookups for their timestamps and use those for version comparison.
-			int firstSeparator = version.fileName.indexOf('-');
-			if (firstSeparator!=-1 && version.fileName.length()>firstSeparator+1) {
-				String maybeVersionNumber = version.fileName.substring(firstSeparator+1);
-				if (maybeVersionNumber.endsWith(".jar")) {
-					maybeVersionNumber = maybeVersionNumber.substring(0, maybeVersionNumber.length()-4);
-				}
-				
-				if (!maybeVersionNumber.isEmpty()) version.number = maybeVersionNumber;
-			}
-			
-			for(Module module: release.modules) {
-				if (module.foldername!=null && module.foldername.equals("mcmod.info")) {
-					version.loaders.add("forge");
-					allLoaders.add("forge");
-				} else if (module.foldername!=null && module.foldername.equals("fabric.mod.json")) {
-					version.loaders.add("fabric");
-					allLoaders.add("fabric");
-				}
-			}
-			
-			//Magic Launcher and its ilk
-			if (allLoaders.isEmpty() && release.fileName.endsWith(".zip")) {
-				allLoaders.add("jarmod");
-			}
-			
-			for(Dependency dependency : release.dependencies) {
-				ModInfo.Dependency wtDep = new ModInfo.Dependency();
-				wtDep.providerFileId = dependency.fileId;
-				wtDep.providerModId = dependency.addonId;
-				
-				//If it's already in the cache, grab it
-				wtDep.cacheId = CurseModProvider.instance().getCacheId(dependency.addonId); //Will overwrite null with null if it's not in the cache
-				//We don't have a reverse-search of fileId->version but that's not super important for the purpose of resolving mods
-				
-				version.dependencies.add(wtDep);
-			}
-			
+			ModInfo.Version version = release.toVersion();
 			result.versions.add(version);
 			
+			for(String s : result.loaders) {
+				if (!result.loaders.contains(s)) result.loaders.add(s);
+			}
 		}
-		result.loaders.addAll(allLoaders);
 		
 		return result;
 	}

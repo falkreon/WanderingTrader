@@ -1,13 +1,9 @@
 package blue.endless.wtrader.provider.curse;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -174,14 +170,79 @@ public class CurseModProvider extends ModProvider {
 	@Override
 	public ModInfo fetch(String providerId) throws IOException {
 		JsonElement elem = RestQuery.start("https://addons-ecs.forgesvc.net/api/v2/addon/"+providerId);
+		//System.out.println(elem.toJson(JsonGrammar.JSON5));
 		if (elem instanceof JsonObject) {
 			Integer categoryId = ((JsonObject) elem).recursiveGet(Integer.class, "categorySection.id");
 			if (categoryId==null || categoryId.intValue()!=8) throw new IOException("Server responded with a non-mod object (categoryId="+categoryId+").");
 			
 			ModInfo modInfo = Jankson.builder().build().fromJson((JsonObject) elem, CurseModInfo.class).toModInfo();
+			//System.out.println("Fetched "+Jankson.builder().build().toJson(modInfo).toJson(JsonGrammar.JSON5));
 			return modInfo;
 		} else {
 			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
 		}
+	}
+
+	@Override
+	public ModInfo.Version resolve(ModInfo.Dependency unresolved, String mcversion) throws IOException {
+		JsonElement elem = RestQuery.start("https://addons-ecs.forgesvc.net/api/v2/addon/"+unresolved.providerModId+"/files");
+		if (elem instanceof JsonArray) {
+			ModInfo.Version bestVersion = null;
+			for(JsonElement fileElem : (JsonArray)elem) {
+				if (fileElem instanceof JsonObject) {
+					//JsonObject fileObj = (JsonObject) fileElem;
+					//ModInfo.Version cur = new ModInfo.Version();
+					//cur.fileName = fileObj.get(String.class, "fileName");
+					ModInfo.Version version = ((JsonArray) elem).getMarshaller().marshall(CurseModInfo.Release.class, fileElem).toVersion();
+					
+					if (bestVersion==null || version.timestamp>bestVersion.timestamp) {
+						if (version.mcVersion!=null && version.mcVersion.equals(mcversion)) {
+							bestVersion = version;
+						}
+					}
+				
+				}
+			}
+			
+			if (bestVersion==null) {
+				System.out.println("Can't resolve mod "+unresolved.providerModId+"!");
+				throw new IOException();
+			}
+			
+			return bestVersion;
+		} else {
+			throw new IOException("Server response was valid json but not the expected JsonArray of files (was a "+elem.getClass().getSimpleName()+").");
+		}
+		
+		
+		/*
+		JsonElement elem = RestQuery.start("https://addons-ecs.forgesvc.net/api/v2/addon/"+unresolved.providerModId+"/file/"+unresolved.providerFileId);
+		if (elem instanceof JsonObject) {
+			JsonObject obj = (JsonObject) elem;
+			ModInfo.Version result = new ModInfo.Version();
+			result.fileName = obj.get(String.class, "fileName");
+			result.downloadUrl = obj.get(String.class, "downloadUrl");
+			result.number = extractModVersion(result.fileName, obj.get(String.class, "displayName"));
+			
+			return result;
+		} else {
+			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
+		}*/
+	}
+	
+	public static String extractModVersion(String fileName, String displayName) {
+		int firstSeparator = fileName.indexOf('-');
+		if (firstSeparator!=-1 && fileName.length()>firstSeparator+1) {
+			String maybeVersionNumber = fileName.substring(firstSeparator+1);
+			if (maybeVersionNumber.endsWith(".jar") || maybeVersionNumber.endsWith(".zip")) {
+				maybeVersionNumber = maybeVersionNumber.substring(0, maybeVersionNumber.length()-4);
+			}
+			
+			if (!maybeVersionNumber.isEmpty()) {
+				return maybeVersionNumber;
+			}
+		}
+		
+		return displayName.trim().replace(" ", "_");
 	}
 }

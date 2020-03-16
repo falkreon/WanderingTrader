@@ -65,4 +65,18 @@ public final class CacheModProvider extends ModProvider {
 		File f = new File(baseDirectory, providerId+".json");
 		return (f.exists()) ? fetch(f) : null;
 	}
+
+	@Override
+	public ModInfo.Version resolve(ModInfo.Dependency unresolved, String mcversion) throws IOException {
+		if (unresolved.provider.equals("cache")) {
+			throw new UnsupportedOperationException("The cache does not resolve dependencies at this time.");
+		} else {
+			ModProvider actualProvider = ModProvider.get(unresolved.provider);
+			if (actualProvider==null) {
+				throw new IOException("Provider '"+unresolved.provider+"' is unavailable.");
+			} else {
+				return ModProvider.get(unresolved.provider).resolve(unresolved, mcversion);
+			}
+		}
+	}
 }

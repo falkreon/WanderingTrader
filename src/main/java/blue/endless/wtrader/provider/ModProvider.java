@@ -50,6 +50,22 @@ public abstract class ModProvider {
 		return fetch(mod.providerId);
 	}
 	
+	/**
+	 * Grabs a ModInfo for this specific ModInfo
+	 * @param providerId
+	 * @return
+	 * @throws IOException
+	 */
 	@Nonnull
 	public abstract ModInfo fetch(String providerId) throws IOException;
+	
+	/**
+	 * If this ModInfo.Version doesn't have critical information like a number, timestamp, or downloadURL,
+	 * or the URL is invalid or has changed, return a Version representing updated information fetched
+	 * from the data source.
+	 * @param unresolved A partial ModInfo.Version
+	 * @return a full ModInfo.Version
+	 */
+	@Nonnull
+	public abstract ModInfo.Version resolve(ModInfo.Dependency unresolved, String mcversion) throws IOException;
 }
