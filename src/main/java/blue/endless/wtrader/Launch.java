@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import blue.endless.wtrader.gui.TraderGui;
 import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
@@ -16,10 +17,11 @@ public class Launch {
 		ModProvider.register("curse", CurseModProvider.instance());
 		
 		OptionParser optionParser = new OptionParser();
-		optionParser.accepts("gui");
+		optionParser.accepts("nogui");
 		
 		OptionSet options = optionParser.parse(args);
 		
+		/*
 		try {
 			ModInfo info = ModProvider.get("curse").fetch("69163");
 			ModInfo.Version version = info.versions.get(0);
@@ -36,9 +38,7 @@ public class Launch {
 			System.out.println("}");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
-		
+		}*/
 		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");

@@ -43,7 +43,7 @@ public class DependencyResolver {
 		while(!unresolved.isEmpty()) {
 			//Pick one and resolve it
 			DependencyNode curParent = unresolved.pop();
-			System.out.println("    Resolving dependency: "+Jankson.builder().build().toJson(curParent));
+			System.out.println("    Resolving dependency: "+Jankson.builder().build().toJson(curParent.version));
 			Collection<ModInfo.Version> dependencies = resolve(curParent.version, mcversion);
 			for(ModInfo.Version dependency : dependencies) {
 				

@@ -87,6 +87,7 @@ public class CurseModInfo {
 			version.fileName = fileName;
 			version.downloadUrl = downloadUrl;
 			version.timestamp = Instant.parse(fileDate).toEpochMilli();
+			version.mcVersion = gameVersion.get(0);
 			if (gameVersion.size()==1) {
 				version.mcVersion = gameVersion.get(0);
 			}

@@ -1,4 +1,4 @@
-package blue.endless.wtrader;
+package blue.endless.wtrader.gui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -12,6 +12,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
+import java.time.Instant;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -19,9 +20,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -31,10 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import blue.endless.splinter.LayoutElementMetrics;
-import blue.endless.wtrader.gui.Axis;
-import blue.endless.wtrader.gui.JIcon;
-import blue.endless.wtrader.gui.ModSelectPanel;
-import blue.endless.wtrader.gui.SplinterBox;
+import blue.endless.wtrader.ModInfo;
 
 public class TraderGui extends JFrame {
 	private static final long serialVersionUID = 3683901432454302841L;
@@ -121,7 +121,7 @@ public class TraderGui extends JFrame {
 		modsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(modsLabel);
 		
-		
+		/*
 		String[] columnNames = new String[] { "Name", "Version", "Side", "Category", "Author(s)", "Project Link" };
 		Object[][] tableCells = new Object[1][6];
 		tableCells[0][0] = "Thermal Expansion";
@@ -130,7 +130,15 @@ public class TraderGui extends JFrame {
 		tableCells[0][3] = "Technology";
 		tableCells[0][4] = "Team CoFH";
 		tableCells[0][5] = "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion";
-		JTable modsTable = new JTable(tableCells, columnNames);
+		JTable modsTable = new JTable(tableCells, columnNames);*/
+		
+		ListTableModel<ModInfo.Version> modsTableModel = new ListTableModel<>();
+		JTable modsTable = new JTable(modsTableModel);
+		modsTableModel.addColumn("Name", it->it.modId);
+		modsTableModel.addColumn("Version", it->it.number);
+		modsTableModel.addColumn("Released", it->Instant.ofEpochMilli(it.timestamp).toString());
+		modsTableModel.addColumn("Loaders", it->it.loaders.toString());
+		
 		modsTable.setAlignmentX(Component.LEFT_ALIGNMENT);
 		modsTable.getTableHeader().setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(modsTable.getTableHeader());
@@ -170,11 +178,21 @@ public class TraderGui extends JFrame {
 		featuresLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(featuresLabel);
 		
-		String[] featureColumnNames = new String[] { "Name", "Version", "Reccommended", "Description", "Author(s)", "Project Link" };
-		Object[][] featureCells = new Object[][] {
-			{ "LLOverlay Reloaded", "6", "[ NYI ]", "Adds a light level overlay", "Someone", "https://example.com/" }
-		};
-		JTable featuresTable = new JTable(featureCells, featureColumnNames);
+		//String[] featureColumnNames = new String[] { "Name", "Version", "Reccommended", "Description", "Author(s)", "Project Link" };
+		//Object[][] featureCells = new Object[][] {
+		//	{ "LLOverlay Reloaded", "6", "[ NYI ]", "Adds a light level overlay", "Someone", "https://example.com/" }
+		//};
+		ListTableModel<ModInfo.Version> featuresModel = new ListTableModel<>();
+		featuresModel.addColumn("Name", (it)->it.modId);
+		featuresModel.addColumn("Version", it->it.number);
+		featuresModel.addColumn("Reccommended", it->new JCheckBox()); //TODO: This doesn't work because the TableModel reports its class as Object
+		ModInfo.Version dummy = new ModInfo.Version();
+		dummy.modId = "asdfasdf";
+		dummy.number = "1.0";
+		featuresModel.addRow(dummy);
+		
+		JTable featuresTable = new JTable(featuresModel);
+		//JTable featuresTable = new JTable(featureCells, featureColumnNames);
 		featuresTable.setAlignmentX(Component.LEFT_ALIGNMENT);
 		featuresTable.getTableHeader().setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(featuresTable.getTableHeader());
@@ -209,6 +227,32 @@ public class TraderGui extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				((CardLayout) cards.getLayout()).show(cards, "addMod");
 			}
+		});
+		
+		addModPanel.curseAddModButton.setAction(new AbstractAction("Add Mod") {
+			private static final long serialVersionUID = -4152159785202161582L;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				ModInfo mod = addModPanel.curseModList.getSelectedValue();
+				System.out.println("Adding "+mod.id+" to pack.");
+				//Pick the right version for this pack
+				String targetVersion = "1.12.2";
+				String targetLoader = "forge";
+				ModInfo.Version bestVersion = null;
+				for(ModInfo.Version cur : mod.versions) {
+					if (cur.mcVersion.equals(targetVersion) && cur.loaders.contains(targetLoader)) {
+						if (bestVersion==null || cur.timestamp>bestVersion.timestamp) bestVersion = cur;
+					}
+				}
+				
+				if (bestVersion!=null) {
+					modsTableModel.addRow(bestVersion);
+				} else {
+					JOptionPane.showMessageDialog(TraderGui.this, "Can't find a version of "+mod.id+" that's compatible with this pack!");
+				}
+			}
+			
 		});
 		/*
 		JPanel searchBar = new JPanel();
@@ -289,7 +333,7 @@ public class TraderGui extends JFrame {
 	
 	private static Font sizeFontForDisplay(Font f, double points) {
 		int dpi = Toolkit.getDefaultToolkit().getScreenResolution();
-		System.out.println("DPI: "+dpi);
+		//System.out.println("DPI: "+dpi);
 		if (dpi<72) dpi=72;
 		
 		int scaledSize = (int) ( points * (dpi/72.0) );

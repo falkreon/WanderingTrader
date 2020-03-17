@@ -17,21 +17,19 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonArray;
-import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonObject;
 import blue.endless.wtrader.ModInfo;
-import blue.endless.wtrader.RestQuery;
 import blue.endless.wtrader.provider.ModProvider;
-import blue.endless.wtrader.provider.curse.CurseModInfo;
 
 public class ModSelectPanel extends JPanel {
 	private static final long serialVersionUID = 4312519726972935572L;
 	
 	JTabbedPane tabs = new JTabbedPane();
 	JPanel cacheTab = new JPanel();
-	DefaultListModel<ModInfo> modList = new DefaultListModel<>();
+	DefaultListModel<ModInfo> curseModListModel = new DefaultListModel<>();
+	JList<ModInfo> curseModList = new JList<>(curseModListModel);
+	JButton curseAddModButton = new JButton("Add Mod");
+	
 	
 	private static Jankson jankson = Jankson.builder().build();
 	
@@ -57,7 +55,7 @@ public class ModSelectPanel extends JPanel {
 		curseSearchPanel.add(curseSearchButton, BorderLayout.EAST);
 		result.add(curseSearchPanel, BorderLayout.NORTH);
 		
-		JList<ModInfo> curseModList = new JList<>(modList);
+		//JList<ModInfo> curseModList = new JList<>(modList);
 		curseModList.setCellRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 7603059254886882671L;
 			@Override
@@ -74,15 +72,22 @@ public class ModSelectPanel extends JPanel {
 		});
 		
 		
-		
+		/*
 		ModInfo test = new ModInfo();
 		test.name = "Xtones";
 		test.provider = "curse";
 		test.description = "An \"official\" port of Ztones";
-		test.authors = "TehNut, _ForgeUser9211286";
-		modList.add(0, test);
+		test.authors = "TehNut, _ForgeUser9211286";*/
+		//modList.add(0, test);
 		
 		result.add(new JScrollPane(curseModList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
+		
+		JPanel bottomPanel = new JPanel();
+		result.add(bottomPanel, BorderLayout.SOUTH);
+		bottomPanel.setLayout(new BorderLayout());
+		bottomPanel.add(new JPanel(), BorderLayout.CENTER);
+		curseAddModButton = new JButton("Add to Pack");
+		bottomPanel.add(curseAddModButton, BorderLayout.EAST);
 		
 		curseSearchButton.setAction(new AbstractAction("Search") {
 			private static final long serialVersionUID = -3740855044287218120L;
@@ -91,16 +96,18 @@ public class ModSelectPanel extends JPanel {
 			public void actionPerformed(ActionEvent event) {
 				List<ModInfo> results = ModProvider.get("curse").search(curseSearchField.getText());
 				
-				modList.clear();
+				curseModListModel.clear();
 				int i = 0;
 				for(ModInfo info : results) {
 					System.out.println(jankson.toJson(info).toJson(JsonGrammar.JSON5));
-					modList.add(i, info);
+					curseModListModel.add(i, info);
 					i++;					
 				}
 				
 			}
 		});
+		
+		
 		
 		return result;
 	}
