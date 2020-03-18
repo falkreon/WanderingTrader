@@ -21,6 +21,7 @@ import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
 import blue.endless.jankson.api.SyntaxError;
+import blue.endless.wtrader.DependencyResolver;
 import blue.endless.wtrader.ModInfo;
 import blue.endless.wtrader.RestQuery;
 import blue.endless.wtrader.provider.ModProvider;
@@ -196,7 +197,7 @@ public class CurseModProvider extends ModProvider {
 					ModInfo.Version version = ((JsonArray) elem).getMarshaller().marshall(CurseModInfo.Release.class, fileElem).toVersion();
 					
 					if (bestVersion==null || version.timestamp>bestVersion.timestamp) {
-						if (version.mcVersion!=null && version.mcVersion.equals(mcversion)) {
+						if (version.mcVersion!=null && DependencyResolver.getMajorMinor(version.mcVersion).equals(DependencyResolver.getMajorMinor(mcversion))) {
 							bestVersion = version;
 						}
 					}

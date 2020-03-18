@@ -113,4 +113,30 @@ public class DependencyResolver {
 			for(DependencyNode node : nodes) this.nodes.add(node);
 		}
 	}
+	
+	public static String getMajorMinor(String semver) {
+		int nonsemantic = semver.indexOf('+');
+		if (nonsemantic!=-1) {
+			semver = semver.substring(0, nonsemantic);
+		}
+		int qualifier = semver.indexOf('-');
+		if (qualifier!=-1) {
+			semver = semver.substring(0, qualifier);
+		}
+		
+		boolean dotFound = false;
+		int secondDot = -1;
+		for(int i=0; i<semver.length(); i++) {
+			if (semver.charAt(i)=='.') {
+				if (dotFound) {
+					secondDot = i;
+					break;
+				} else {
+					dotFound = true;
+				}
+			}
+		}
+		if (secondDot!=-1) semver = semver.substring(0,secondDot);
+		return semver;
+	}
 }

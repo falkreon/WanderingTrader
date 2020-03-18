@@ -1,9 +1,7 @@
 package blue.endless.wtrader;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.gui.TraderGui;
 import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
@@ -21,30 +19,22 @@ public class Launch {
 		
 		OptionSet options = optionParser.parse(args);
 		
-		/*
-		try {
-			ModInfo info = ModProvider.get("curse").fetch("69163");
-			ModInfo.Version version = info.versions.get(0);
-			System.out.println("Resolving dependency graph for "+version.fileName);
-			ArrayList<ModInfo.Version> modList = new ArrayList<>();
-			modList.add(version);
-			Collection<ModInfo.Version> resolved = DependencyResolver.resolve(modList, "1.12.2");
-			
-			System.out.println();
-			System.out.println("ResolvedMods {");
-			for(ModInfo.Version resolvedItem : resolved) {
-				System.out.println("    "+resolvedItem.downloadUrl);
-			}
-			System.out.println("}");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
+		//ModSelection selection = ModSelection.fromModpackLine("xycraft >= 1.8.2 @2011-12-03T10:15:30Z");
+		//System.out.println(Jankson.builder().build().toJson(selection).toJson(JsonGrammar.JSON5));
+		
+		Modpack pack = new Modpack();
+		PackInfo info = pack.getInfo();
+		info.name = "untitled";
+		info.version = "1.0";
+		info.modLoader = "fabric";
+		info.loaderVersion = "0.7.8+build.187";
+		info.mcVersion = "1.15.2";
 		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");
 		} else {
 			System.out.println("Running in gui mode. Use --nogui for headless / console mode.");
-			TraderGui gui = new TraderGui();
+			TraderGui gui = new TraderGui(pack);
 			gui.setVisible(true);
 		}
 	}

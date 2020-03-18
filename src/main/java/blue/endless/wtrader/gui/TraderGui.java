@@ -34,12 +34,14 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import blue.endless.splinter.LayoutElementMetrics;
+import blue.endless.wtrader.DependencyResolver;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.Modpack;
 
 public class TraderGui extends JFrame {
 	private static final long serialVersionUID = 3683901432454302841L;
 
-	public TraderGui() {
+	public TraderGui(Modpack pack) {
 		
 		//try {
 			
@@ -57,7 +59,8 @@ public class TraderGui extends JFrame {
 		
 		this.setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
 		
-		this.setTitle("Wandering Trader - Center of the Multiverse - 11.2");
+		this.setTitle("Wandering Trader - "+pack.getInfo().name+" - "+pack.getInfo().version);
+		//this.setTitle("Wandering Trader - Center of the Multiverse - 11.2");
 		
 		JPanel cards = new JPanel(new CardLayout());
 		this.setContentPane(cards); //We could set our own layout but that screws up LaF applications because we apply LaF so late.
@@ -69,9 +72,12 @@ public class TraderGui extends JFrame {
 		packInfo.setPreferredSize(new Dimension(600, Integer.MAX_VALUE));
 		packInfo.setMinimumSize(new Dimension(400, 400));
 		JIcon packIcon = new JIcon(Toolkit.getDefaultToolkit().getImage("icon.png"));
-		JComboBox<String> modLoaderMenu = new JComboBox<String>(new String[] {"Fabric", "Forge"});
+		JComboBox<String> modLoaderMenu = new JComboBox<String>(new String[] {"fabric", "forge"});
+		modLoaderMenu.setSelectedItem(pack.getInfo().modLoader);
 		JComboBox<String> mcVersionMenu = new JComboBox<>(new String[] {"1.15.2", "1.15.1", "1.15", "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14"});
-		JComboBox<String> loaderVersionMenu = new JComboBox<>(new String[] {"0.7.8+build.184"});
+		mcVersionMenu.setSelectedItem(pack.getInfo().mcVersion);
+		JComboBox<String> loaderVersionMenu = new JComboBox<>(new String[] {"0.7.8+build.184", "0.7.8+build.187"});
+		loaderVersionMenu.setSelectedItem(pack.getInfo().loaderVersion);
 		
 		LayoutElementMetrics iconMetrics = new LayoutElementMetrics(0, 0);
 		iconMetrics.cellsX = 2;
@@ -79,8 +85,8 @@ public class TraderGui extends JFrame {
 		iconMetrics.fixedMinY = 64;
 		packInfo.add(packIcon, iconMetrics);
 		
-		packInfo.addComponents(new JLabel("Pack Name:"),    new JTextField("Center of the Multiverse"));
-		packInfo.addComponents(new JLabel("Pack Version:"), new JTextField("11.2"));
+		packInfo.addComponents(new JLabel("Pack Name:"),    new JTextField(pack.getInfo().name));
+		packInfo.addComponents(new JLabel("Pack Version:"), new JTextField(pack.getInfo().version));
 		packInfo.addComponents(new JLabel("Mod Loader:"),   modLoaderMenu);
 		packInfo.addComponents(new JLabel("MC Version:"),   mcVersionMenu);
 		packInfo.addComponents(new JLabel("Loader Version:"), loaderVersionMenu);
@@ -237,11 +243,12 @@ public class TraderGui extends JFrame {
 				ModInfo mod = addModPanel.curseModList.getSelectedValue();
 				System.out.println("Adding "+mod.id+" to pack.");
 				//Pick the right version for this pack
-				String targetVersion = "1.12.2";
+				String targetVersion = DependencyResolver.getMajorMinor("1.12.2");
 				String targetLoader = "forge";
 				ModInfo.Version bestVersion = null;
 				for(ModInfo.Version cur : mod.versions) {
-					if (cur.mcVersion.equals(targetVersion) && cur.loaders.contains(targetLoader)) {
+					
+					if (DependencyResolver.getMajorMinor(cur.mcVersion).equals(targetVersion) && cur.loaders.contains(targetLoader)) {
 						if (bestVersion==null || cur.timestamp>bestVersion.timestamp) bestVersion = cur;
 					}
 				}
@@ -251,6 +258,8 @@ public class TraderGui extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(TraderGui.this, "Can't find a version of "+mod.id+" that's compatible with this pack!");
 				}
+				((CardLayout) cards.getLayout()).show(cards, "main");
+				contentsScroller.validate();
 			}
 			
 		});

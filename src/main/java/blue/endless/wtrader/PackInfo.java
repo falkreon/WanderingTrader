@@ -5,6 +5,7 @@ public class PackInfo {
 	public String version;
 	public String modLoader;
 	public String loaderVersion;
+	public String mcVersion;
 	public String authors;
 	public String description;
 }
