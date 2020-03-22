@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.Modpack;
 
 public class ModInfoPanel extends SplinterBox {
 	private static final long serialVersionUID = -1062820173404886327L;
@@ -29,6 +32,19 @@ public class ModInfoPanel extends SplinterBox {
 		setMod(mod);
 	}
 
+	public ModInfoPanel(Modpack.ModItem item) {
+		this.withAxis(Axis.VERTICAL);
+		
+		name.setFont(this.getFont().deriveFont(36.0f));
+		
+		this.addComponents(name, authors);
+		this.addComponents(description);
+		
+		this.setPreferredSize(new Dimension(0, 128));
+		
+		setModItem(item);
+	}
+
 	public void setSelected(boolean isSelected) {
 		if (isSelected) {
 			this.setBackground(new Color(230, 230, 255));
@@ -42,6 +58,41 @@ public class ModInfoPanel extends SplinterBox {
 			this.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 		} else {
 			this.setBorder(null);
+		}
+	}
+	
+	public void setModName(String modName) {
+		this.name.setText(modName);
+	}
+	
+	public void setModAuthors(String authors) {
+		this.authors.setText(authors);
+	}
+	
+	public void setDescription(String desc) {
+		this.description.setText(desc);
+	}
+	
+	public void setModItem(Modpack.ModItem item) {
+		System.out.println("item: "+Jankson.builder().build().toJson(item).toJson(JsonGrammar.JSON5));
+		System.out.println("cachedVersion: "+Jankson.builder().build().toJson(item.selection.cachedVersion).toJson(JsonGrammar.JSON5));
+		System.out.println("cachedInfo: "+Jankson.builder().build().toJson(item.selection.cachedInfo).toJson(JsonGrammar.JSON5));
+		
+		if (item.selection.cachedVersion!=null) {
+			this.name.setText(item.selection.cachedVersion.fileName);
+		}
+		
+		if (item.selection.cachedInfo==null) {
+			this.name.setText(item.selection.modCacheId);
+		} else {
+			this.mod = item.selection.cachedInfo;
+			this.name.setText("XXXXXXXXXXXXXXXXXX");
+			System.out.println("Setting name from CachedInfo");
+			System.out.println(Thread.currentThread().getName());
+			//this.name.setText(item.selection.cachedInfo.name);
+			this.authors.setText(item.selection.cachedInfo.authors);
+			this.description.setText(item.selection.cachedInfo.description);
+			this.repaint();
 		}
 	}
 	

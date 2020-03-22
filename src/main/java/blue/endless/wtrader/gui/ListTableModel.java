@@ -49,7 +49,7 @@ public class ListTableModel<T> implements TableModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		System.out.println("get row: "+row+" col: "+col);
+		//System.out.println("get row: "+row+" col: "+col);
 		if (row<0 || row>=data.size()) return null;
 		if (col<0 || col>=extractors.size()) return null;
 		

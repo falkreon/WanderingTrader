@@ -11,8 +11,8 @@ import blue.endless.jankson.api.SyntaxError;
 public class Modpack {
 	private transient File location;
 	
-	private PackInfo packInfo = new PackInfo();
-	private List<ModItem> mods = new ArrayList<>();
+	public PackInfo packInfo = new PackInfo();
+	public List<ModItem> mods = new ArrayList<>();
 	
 	
 	public void save() {
@@ -69,7 +69,7 @@ public class Modpack {
 	}
 	
 	public static class ModItem {
-		String comment;
-		ModSelection selection;
+		public String comment;
+		public ModSelection selection;
 	}
 }

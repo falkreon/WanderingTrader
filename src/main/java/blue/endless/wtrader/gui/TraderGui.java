@@ -1,29 +1,36 @@
 package blue.endless.wtrader.gui;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.time.Instant;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -31,18 +38,29 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import blue.endless.splinter.LayoutElementMetrics;
 import blue.endless.wtrader.DependencyResolver;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.ModSelection;
 import blue.endless.wtrader.Modpack;
 
 public class TraderGui extends JFrame {
 	private static final long serialVersionUID = 3683901432454302841L;
-
+	
+	private Modpack pack;
+	
+	private DefaultListModel<Modpack.ModItem> modListModel = new DefaultListModel<>();
+	private JList<Modpack.ModItem> modsList;
+	
+	static Image jarImage;// = Toolkit.getDefaultToolkit().getImage("icon.png");
+	
 	public TraderGui(Modpack pack) {
-		
+		this.pack = pack;
 		//try {
 			
 			//SynthLookAndFeel laf = new SynthLookAndFeel();
@@ -57,7 +75,25 @@ public class TraderGui extends JFrame {
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setMinimumSize(new Dimension(300,300));
 		
-		this.setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
+		try {
+			InputStream iconStream = TraderGui.class.getClassLoader().getResourceAsStream("icon.png");
+			if (iconStream==null) {
+				System.out.println("Unable to find resource");
+			} else {
+				BufferedImage icon = ImageIO.read(iconStream);
+				this.setIconImage(icon);
+			}
+			
+			InputStream jarIconStream = TraderGui.class.getClassLoader().getResourceAsStream("jar.png");
+			if (jarIconStream!=null) jarImage = ImageIO.read(jarIconStream);//.getScaledInstance(64, 64, Image.SCALE_FAST);
+			//jarImage = ImageIO.read(TraderGui.class.getResourceAsStream("jar.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		//this.setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
+		//jarImage = this.getIconImage();
+		//this.setIconImage(jarImage);
 		
 		this.setTitle("Wandering Trader - "+pack.getInfo().name+" - "+pack.getInfo().version);
 		//this.setTitle("Wandering Trader - Center of the Multiverse - 11.2");
@@ -102,8 +138,6 @@ public class TraderGui extends JFrame {
 		packInfo.addComponents(new JButton("This is a test"));
 		
 		packInfo.addComponents(new JPanel());
-		//modLoaderMenu.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		//mcVersionMenu.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		
 		LayoutElementMetrics packInfoMetrics = mainPanel.nextRow();
 		packInfoMetrics.fixedMinX = 300;
@@ -127,18 +161,32 @@ public class TraderGui extends JFrame {
 		modsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(modsLabel);
 		
-		/*
-		String[] columnNames = new String[] { "Name", "Version", "Side", "Category", "Author(s)", "Project Link" };
-		Object[][] tableCells = new Object[1][6];
-		tableCells[0][0] = "Thermal Expansion";
-		tableCells[0][1] = "1.0";
-		tableCells[0][2] = "Both";
-		tableCells[0][3] = "Technology";
-		tableCells[0][4] = "Team CoFH";
-		tableCells[0][5] = "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion";
-		JTable modsTable = new JTable(tableCells, columnNames);*/
+		//DefaultListModel<Modpack.ModItem> entries = new DefaultListModel<>();
+		//for(Modpack.ModItem mod : pack.mods) {
+			
+		//	modListModel.addElement(mod);
+		//}
+		syncMods();
+		//JList<Modpack.ModItem> 
+		modsList = new JList<>(modListModel);
+		modsList.setCellRenderer(new ModItemRenderer());
+		modsList.setAlignmentX(Component.LEFT_ALIGNMENT);
+		modsList.setPreferredSize(new Dimension(Short.MAX_VALUE, 0));
+		modsList.setMinimumSize(new Dimension(Short.MAX_VALUE, 0));
+		modsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		modsList.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent arg0) {
+				System.out.println(arg0.getFirstIndex());
+			}
+			
+		});
+		//modsList.setBorder(BorderFactory.createLineBorder(Color.RED));
+		JPanel prototype = new JPanel();
 		
-		ListTableModel<ModInfo.Version> modsTableModel = new ListTableModel<>();
+		contentsPanel.add(modsList);
+		/*ListTableModel<ModInfo.Version> modsTableModel = new ListTableModel<>();
 		JTable modsTable = new JTable(modsTableModel);
 		modsTableModel.addColumn("Name", it->it.modId);
 		modsTableModel.addColumn("Version", it->it.number);
@@ -148,7 +196,7 @@ public class TraderGui extends JFrame {
 		modsTable.setAlignmentX(Component.LEFT_ALIGNMENT);
 		modsTable.getTableHeader().setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(modsTable.getTableHeader());
-		contentsPanel.add(modsTable);
+		contentsPanel.add(modsTable);*/
 		
 		JButton addModButton = new JButton("Add Mod");
 		addModButton.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -254,14 +302,24 @@ public class TraderGui extends JFrame {
 				}
 				
 				if (bestVersion!=null) {
-					modsTableModel.addRow(bestVersion);
+					Modpack.ModItem item = new Modpack.ModItem();
+					ModSelection selection = new ModSelection();
+					selection.cachedInfo = mod;
+					selection.cachedVersion = bestVersion;
+					
+					selection.version = bestVersion.number;
+					selection.constraint = ModSelection.Constraint.GREATER_THAN_OR_EQUAL;
+					selection.timestamp = bestVersion.timestamp;
+					selection.modCacheId = bestVersion.modId;
+					item.selection = selection;
+					
+					pack.mods.add(item);
+					syncMods();
 				} else {
 					JOptionPane.showMessageDialog(TraderGui.this, "Can't find a version of "+mod.id+" that's compatible with this pack!");
 				}
 				((CardLayout) cards.getLayout()).show(cards, "main");
-				contentsScroller.validate();
 			}
-			
 		});
 		/*
 		JPanel searchBar = new JPanel();
@@ -280,6 +338,18 @@ public class TraderGui extends JFrame {
 		this.getContentPane().add(searchBar, BorderLayout.NORTH);*/
 	}
 	
+	private void syncMods() {
+		modListModel.clear();
+		for(Modpack.ModItem item : pack.mods) {
+			modListModel.addElement(item);
+		}
+		if (modsList!=null) {
+			modsList.invalidate();
+			modsList.repaint();
+		}
+	}
+	
+	/*
 	private static class GridBuilder {
 		private GridBagConstraints result = new GridBagConstraints();
 		private GridBuilder(int x, int y) {
@@ -320,6 +390,90 @@ public class TraderGui extends JFrame {
 		
 		public static GridBuilder at(int x, int y) {
 			return new GridBuilder(x, y);
+		}
+	}*/
+	
+	private static class ModItemRenderer extends DefaultListCellRenderer {
+		private static final long serialVersionUID = 7603059254886882671L;
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			if (value instanceof Modpack.ModItem) {
+				Modpack.ModItem item = (Modpack.ModItem) value;
+				//ModInfoPanel doesn't seem to properly layout its components inside the modlist inside the scroll panel. Use a JLabel for now.
+				/*
+				ModInfoPanel panel = new ModInfoPanel(((Modpack.ModItem) value).selection.cachedInfo);
+				panel.setSelected(isSelected);
+				panel.setFocused(cellHasFocus);
+				//panel.setModItem((Modpack.ModItem) value);
+				return panel;*/
+				String modName = "";
+				if (item.selection.cachedInfo!=null) {
+					//Use the filename reported by the ModProvider in its ModInfo
+					modName = item.selection.cachedInfo.name;
+				} else {
+					//Derive a mod-name from the filename
+					modName = item.selection.cachedVersion.fileName;
+					int hyphen = modName.indexOf('-');
+					if (hyphen!=-1) {
+						modName = modName.substring(0, hyphen);
+					} else {
+						if (modName.endsWith(".jar")) {
+							modName = modName.substring(0, modName.length()-4);
+						}
+					}
+				}
+				
+				
+				
+				JLabel result = new JLabel(modName);
+				if (((Modpack.ModItem) value).selection.cachedVersion.fileName.endsWith(".jar")) {
+					result.setIcon(new ImageIcon(TraderGui.jarImage));
+				}
+				result.setFocusable(true);
+				if (cellHasFocus) {
+					result.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
+					result.setOpaque(true);
+					result.setBackground(new Color(220, 220, 255));
+				} else {
+					result.setBorder(null);
+				}
+				/*
+				result.addFocusListener(new FocusAdapter() {
+					@Override
+					public void focusGained(FocusEvent e) {
+						System.out.println("Focused!");
+						result.setBorder(BorderFactory.createLineBorder(Color.BLUE, 4));
+					} 
+					
+					@Override
+					public void focusLost(FocusEvent e) {
+						System.out.println("Focus Lost!");
+						result.setBorder(null);
+					}
+				});*/
+				result.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						System.out.println("Focused!");
+						result.requestFocusInWindow();
+					}
+				});
+				//result.setSize(list.getParent().getWidth(), 64);
+				//Dimension d = new Dimension(Short.MAX_VALUE, 64);
+				//result.setPreferredSize(d);
+				result.setPreferredSize(new Dimension(500, 64));
+				result.setMaximumSize(new Dimension(Short.MAX_VALUE, 64));
+				
+				return result;
+			} else {
+				System.out.println("DEFAULTED");
+				JLabel result = new JLabel(value.toString());
+				result.setSize(list.getParent().getWidth(), 64);
+				Dimension d = new Dimension(list.getParent().getWidth(), 64);
+				result.setPreferredSize(d);
+				result.setMaximumSize(d);
+				return result;
+			}
 		}
 	}
 	

@@ -1,5 +1,7 @@
 package blue.endless.wtrader;
 
+import java.time.Instant;
+
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.gui.TraderGui;
@@ -29,6 +31,16 @@ public class Launch {
 		info.modLoader = "fabric";
 		info.loaderVersion = "0.7.8+build.187";
 		info.mcVersion = "1.15.2";
+		
+		ModInfo dummyMod = new ModInfo();
+		ModInfo.Version dummyVersion = new ModInfo.Version();
+		dummyVersion.fileName = "dummyJar-1.8.1+MC1.15.2.jar";
+		dummyVersion.number = "1.8.1+MC1.15.2";
+		dummyVersion.timestamp = Instant.now().toEpochMilli();
+		Modpack.ModItem item = new Modpack.ModItem();
+		item.selection = new ModSelection();
+		item.selection.cachedVersion = dummyVersion;
+		pack.mods.add(item);
 		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");
