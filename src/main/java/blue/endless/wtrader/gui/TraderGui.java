@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -57,7 +58,8 @@ public class TraderGui extends JFrame {
 	private DefaultListModel<Modpack.ModItem> modListModel = new DefaultListModel<>();
 	private JList<Modpack.ModItem> modsList;
 	
-	static Image jarImage;// = Toolkit.getDefaultToolkit().getImage("icon.png");
+	static Image jarImage;
+	static Image unknownImage;
 	
 	public TraderGui(Modpack pack) {
 		this.pack = pack;
@@ -84,8 +86,11 @@ public class TraderGui extends JFrame {
 				this.setIconImage(icon);
 			}
 			
-			InputStream jarIconStream = TraderGui.class.getClassLoader().getResourceAsStream("jar.png");
-			if (jarIconStream!=null) jarImage = ImageIO.read(jarIconStream);//.getScaledInstance(64, 64, Image.SCALE_FAST);
+			//InputStream jarIconStream = TraderGui.class.getClassLoader().getResourceAsStream("jar.png");
+			//if (jarIconStream!=null) jarImage = ImageIO.read(jarIconStream);
+			
+			//InputStream unknownIconStream = TraderGui.class.getClassLoader().getResourceAsStream("unknown.png");
+			//if (unknownIconStream!=null) unknownImage = ImageIO.read(unknownIconStream);
 			//jarImage = ImageIO.read(TraderGui.class.getResourceAsStream("jar.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -156,47 +161,22 @@ public class TraderGui extends JFrame {
 		//packContentsLabel.setFont(packContentsLabel.getFont().deriveFont(Font.BOLD, packContentsLabel.getFont().getSize()+8));
 		contentsPanel.add(packContentsLabel);
 		
+		
+		
 		JLabel modsLabel = new JLabel("Mods");
 		modsLabel.setFont(makeNormalFont(20.0).deriveFont(Font.BOLD));
 		modsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(modsLabel);
 		
-		//DefaultListModel<Modpack.ModItem> entries = new DefaultListModel<>();
-		//for(Modpack.ModItem mod : pack.mods) {
-			
-		//	modListModel.addElement(mod);
-		//}
 		syncMods();
-		//JList<Modpack.ModItem> 
 		modsList = new JList<>(modListModel);
 		modsList.setCellRenderer(new ModItemRenderer());
 		modsList.setAlignmentX(Component.LEFT_ALIGNMENT);
 		modsList.setPreferredSize(new Dimension(Short.MAX_VALUE, 0));
 		modsList.setMinimumSize(new Dimension(Short.MAX_VALUE, 0));
 		modsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		modsList.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent arg0) {
-				System.out.println(arg0.getFirstIndex());
-			}
-			
-		});
-		//modsList.setBorder(BorderFactory.createLineBorder(Color.RED));
-		JPanel prototype = new JPanel();
 		
 		contentsPanel.add(modsList);
-		/*ListTableModel<ModInfo.Version> modsTableModel = new ListTableModel<>();
-		JTable modsTable = new JTable(modsTableModel);
-		modsTableModel.addColumn("Name", it->it.modId);
-		modsTableModel.addColumn("Version", it->it.number);
-		modsTableModel.addColumn("Released", it->Instant.ofEpochMilli(it.timestamp).toString());
-		modsTableModel.addColumn("Loaders", it->it.loaders.toString());
-		
-		modsTable.setAlignmentX(Component.LEFT_ALIGNMENT);
-		modsTable.getTableHeader().setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentsPanel.add(modsTable.getTableHeader());
-		contentsPanel.add(modsTable);*/
 		
 		JButton addModButton = new JButton("Add Mod");
 		addModButton.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -205,6 +185,9 @@ public class TraderGui extends JFrame {
 		contentsPanel.add(Box.createRigidArea(new Dimension(0, 16)));
 		
 		
+		
+		//Removed till resource support is a thing
+		/*
 		JLabel resourcesLabel = new JLabel("Resources");
 		resourcesLabel.setFont(makeNormalFont(20.0).deriveFont(Font.BOLD));
 		resourcesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -225,17 +208,16 @@ public class TraderGui extends JFrame {
 		contentsPanel.add(addResourceButton);
 		
 		contentsPanel.add(Box.createRigidArea(new Dimension(0, 16)));
+		*/
 		
-		
+		//Removed till feature support is a thing
+		/*
 		JLabel featuresLabel = new JLabel("Features");
 		featuresLabel.setFont(makeNormalFont(20.0).deriveFont(Font.BOLD));
 		featuresLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(featuresLabel);
 		
-		//String[] featureColumnNames = new String[] { "Name", "Version", "Reccommended", "Description", "Author(s)", "Project Link" };
-		//Object[][] featureCells = new Object[][] {
-		//	{ "LLOverlay Reloaded", "6", "[ NYI ]", "Adds a light level overlay", "Someone", "https://example.com/" }
-		//};
+		
 		ListTableModel<ModInfo.Version> featuresModel = new ListTableModel<>();
 		featuresModel.addColumn("Name", (it)->it.modId);
 		featuresModel.addColumn("Version", it->it.number);
@@ -255,11 +237,9 @@ public class TraderGui extends JFrame {
 		JButton addFeatureButton = new JButton("Add Feature");
 		addFeatureButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(addFeatureButton);
-		
-		
+		*/
 		
 		JScrollPane contentsScroller = new JScrollPane(contentsPanel);
-		//contentsScroller.setMinimumSize(new Dimension(300, 16));
 		
 		contentsScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		contentsScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -321,21 +301,7 @@ public class TraderGui extends JFrame {
 				((CardLayout) cards.getLayout()).show(cards, "main");
 			}
 		});
-		/*
-		JPanel searchBar = new JPanel();
-		//searchBar.setBackground(new Color(0x110022));
-		searchBar.setLayout(new BorderLayout());
-		JTextField searchField = new JTextField();
-		searchField.setEditable(true);
-		//searchField.setBackground(new Color(0x110022));
-		//searchField.setForeground(new Color(0xEEDDFF));
-		searchBar.add(searchField, BorderLayout.CENTER);
-		JButton searchButton = new JButton("Search");
-		//searchButton.setBackground(Color.BLUE);
-		//searchButton.setForeground(Color.WHITE);
-		//searchButton.setMinimumSize(new Dimension(100, 32));
-		searchBar.add(searchButton, BorderLayout.EAST);
-		this.getContentPane().add(searchBar, BorderLayout.NORTH);*/
+		
 	}
 	
 	private void syncMods() {
@@ -349,63 +315,20 @@ public class TraderGui extends JFrame {
 		}
 	}
 	
-	/*
-	private static class GridBuilder {
-		private GridBagConstraints result = new GridBagConstraints();
-		private GridBuilder(int x, int y) {
-			result.gridx = x;
-			result.gridy = y;
-			result.ipadx = 2;
-			result.ipady = 2;
-			result.insets = new Insets(2,2,2,2);
-			result.fill = GridBagConstraints.BOTH;
-		}
-		
-		
-		public GridBuilder weightX(int weight) {
-			result.weightx = weight;
-			return this;
-		}
-		
-		public GridBuilder weightY(int weight) {
-			result.weighty = weight;
-			return this;
-		}
-		
-		public GridBuilder span(int x, int y) {
-			result.gridwidth = x;
-			result.gridheight = y;
-			return this;
-		}
-		
-		public GridBuilder center() {
-			result.fill = GridBagConstraints.NONE;
-			result.anchor = GridBagConstraints.CENTER;
-			return this;
-		}
-		
-		public GridBagConstraints build() {
-			return result;
-		}
-		
-		public static GridBuilder at(int x, int y) {
-			return new GridBuilder(x, y);
-		}
-	}*/
-	
 	private static class ModItemRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 7603059254886882671L;
 		@Override
 		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			if (value instanceof Modpack.ModItem) {
 				Modpack.ModItem item = (Modpack.ModItem) value;
-				//ModInfoPanel doesn't seem to properly layout its components inside the modlist inside the scroll panel. Use a JLabel for now.
-				/*
-				ModInfoPanel panel = new ModInfoPanel(((Modpack.ModItem) value).selection.cachedInfo);
-				panel.setSelected(isSelected);
-				panel.setFocused(cellHasFocus);
-				//panel.setModItem((Modpack.ModItem) value);
-				return panel;*/
+				if (item.selection==null && item.comment!=null) {
+					JLabel label = new JLabel(item.comment);
+					label.setForeground(new Color(100, 180, 100));
+					label.setFont(label.getFont().deriveFont(16.0f).deriveFont(Font.ITALIC));
+					label.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
+					return label;
+				}
+				
 				String modName = "";
 				if (item.selection.cachedInfo!=null) {
 					//Use the filename reported by the ModProvider in its ModInfo
@@ -426,9 +349,17 @@ public class TraderGui extends JFrame {
 				
 				
 				JLabel result = new JLabel(modName);
-				if (((Modpack.ModItem) value).selection.cachedVersion.fileName.endsWith(".jar")) {
-					result.setIcon(new ImageIcon(TraderGui.jarImage));
-				}
+				
+				String fileName = item.selection.cachedVersion.fileName;
+				String extension = "";
+				if (fileName.lastIndexOf('.')!=-1) extension = fileName.substring(fileName.lastIndexOf('.')+1);
+				
+				result.setIcon(new ImageIcon(FileIcons.getIcon(extension)));
+				
+				
+				//if (((Modpack.ModItem) value).selection.cachedVersion.fileName.endsWith(".jar")) {
+				//	result.setIcon(new ImageIcon(TraderGui.jarImage));
+				//}
 				result.setFocusable(true);
 				if (cellHasFocus) {
 					result.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
@@ -437,20 +368,7 @@ public class TraderGui extends JFrame {
 				} else {
 					result.setBorder(null);
 				}
-				/*
-				result.addFocusListener(new FocusAdapter() {
-					@Override
-					public void focusGained(FocusEvent e) {
-						System.out.println("Focused!");
-						result.setBorder(BorderFactory.createLineBorder(Color.BLUE, 4));
-					} 
-					
-					@Override
-					public void focusLost(FocusEvent e) {
-						System.out.println("Focus Lost!");
-						result.setBorder(null);
-					}
-				});*/
+				
 				result.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mousePressed(MouseEvent e) {
@@ -458,9 +376,7 @@ public class TraderGui extends JFrame {
 						result.requestFocusInWindow();
 					}
 				});
-				//result.setSize(list.getParent().getWidth(), 64);
-				//Dimension d = new Dimension(Short.MAX_VALUE, 64);
-				//result.setPreferredSize(d);
+				
 				result.setPreferredSize(new Dimension(500, 64));
 				result.setMaximumSize(new Dimension(Short.MAX_VALUE, 64));
 				
@@ -502,4 +418,60 @@ public class TraderGui extends JFrame {
 		int scaledSize = (int) ( points * (dpi/72.0) );
 		return f.deriveFont(scaledSize);
 	}
+	
+	public static class ModItemView extends JPanel {
+		private static final long serialVersionUID = 3064929838898888378L;
+		
+		public JLabel fileItem = new JLabel();
+		
+		public ModItemView() {
+			this.setBackground(Color.WHITE);
+			this.setOpaque(true);
+		}
+		
+		public void setMod(Modpack.ModItem item) {
+			if (item.selection==null && item.comment!=null) {
+				setComment(item.comment);
+				return;
+			} else {
+				String modName = "";
+				if (item.selection.cachedInfo!=null) {
+					//Use the filename reported by the ModProvider in its ModInfo
+					modName = item.selection.cachedInfo.name;
+				} else {
+					//Derive a mod-name from the filename
+					modName = item.selection.cachedVersion.fileName;
+					int hyphen = modName.indexOf('-');
+					if (hyphen!=-1) {
+						modName = modName.substring(0, hyphen);
+					} else {
+						if (modName.endsWith(".jar")) {
+							modName = modName.substring(0, modName.length()-4);
+						}
+					}
+				}
+				
+				String fileName = item.selection.cachedVersion.fileName;
+				String extension = "";
+				if (fileName.lastIndexOf('.')!=-1) extension = fileName.substring(fileName.lastIndexOf('.')+1);
+				
+				fileItem.setIcon(new ImageIcon(FileIcons.getIcon(extension)));
+				/*
+				if (item.selection.cachedVersion.fileName.endsWith(".jar")) {
+					fileItem.setIcon(new ImageIcon(TraderGui.jarImage));
+				} else {
+					fileItem.setIcon(new ImageIcon(TraderGui.unknownImage));
+				}*/
+			}
+		}
+		
+		public void setComment(String comment) {
+			fileItem.setForeground(new Color(100, 180, 100));
+			fileItem.setFont(fileItem.getFont().deriveFont(16.0f).deriveFont(Font.ITALIC));
+			fileItem.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
+			fileItem.setText(comment);
+		}
+	}
+	
+	
 }

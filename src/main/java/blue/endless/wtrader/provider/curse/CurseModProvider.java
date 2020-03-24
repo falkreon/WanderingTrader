@@ -97,8 +97,17 @@ public class CurseModProvider extends ModProvider {
 		
 		try {
 			Jankson jankson = Jankson.builder().build();
-			keyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8.name()); //Remember folks, sanitize your inputs!
-			JsonElement jsonElem = RestQuery.start("https://addons-ecs.forgesvc.net/api/v2/addon/search?gameId=432&searchFilter="+keyword);
+			
+			String query;
+			if (keyword.trim().chars().allMatch(Character::isDigit)) {
+				//input is totally numeric, let's just assume it's a project ID. This lets us surface alpha-only mods
+				query = "https://addons-ecs.forgesvc.net/api/v2/addon/"+keyword;
+			} else {
+				keyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8.name()); //Remember folks, sanitize your inputs!
+				query = "https://addons-ecs.forgesvc.net/api/v2/addon/search?gameId=432&searchFilter="+keyword;
+			}
+			
+			JsonElement jsonElem = RestQuery.start(query);
 			if (jsonElem instanceof JsonArray) {
 				JsonArray results = (JsonArray) jsonElem;
 				
@@ -111,6 +120,13 @@ public class CurseModProvider extends ModProvider {
 						searchResults.add(info);
 					}
 				}
+			} else if (jsonElem instanceof JsonObject) {
+				JsonObject result = (JsonObject) jsonElem;
+				Integer categoryId = result.recursiveGet(Integer.class, "categorySection.id");
+				if (categoryId==null || categoryId.intValue()!=MOD_CATEGORY_ID) return searchResults;
+				
+				ModInfo info = jankson.fromJson((JsonObject) result, CurseModInfo.class).toModInfo();
+				searchResults.add(info);
 			}
 			
 		} catch (IOException error) {

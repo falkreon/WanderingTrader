@@ -42,6 +42,10 @@ public class Launch {
 		item.selection.cachedVersion = dummyVersion;
 		pack.mods.add(item);
 		
+		Modpack.ModItem commentItem = new Modpack.ModItem();
+		commentItem.comment = "This is a comment.";
+		pack.mods.add(commentItem);
+		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");
 		} else {

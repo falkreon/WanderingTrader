@@ -1,0 +1,9 @@
+ {
+ 	"jar" : "application/java-archive",
+ 	"zip" : "application/zip",
+ 	"txt" : "text/plain",
+ 	"ini" : "text/plain",
+ 	"json": "application/json",
+ 	"png" : "image/png",
+ 	"cfg" : "text/plain"
+ }
