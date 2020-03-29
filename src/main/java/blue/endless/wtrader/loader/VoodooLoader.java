@@ -3,6 +3,7 @@ package blue.endless.wtrader.loader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonObject;
@@ -10,12 +11,19 @@ import blue.endless.jankson.api.SyntaxError;
 import blue.endless.wtrader.ModInfo;
 import blue.endless.wtrader.ModSelection;
 import blue.endless.wtrader.Modpack;
+import blue.endless.wtrader.Progress;
 import blue.endless.wtrader.provider.DirectModProvider;
 import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
 
 public class VoodooLoader {
-	public static Modpack load(File f) throws IOException {
+	public static Modpack load(File f, Consumer<Progress> progressConsumer) throws IOException {
+		Progress progress = Progress.of("Loading pack info...")
+				.min(0)
+				.max(100)
+				.value(0);
+		progressConsumer.accept(progress);
+		
 		String preprocessed = org.hjson.JsonValue.readHjson(new FileReader(f)).toString();
 		Jankson jankson = Jankson.builder().build();
 		JsonObject packObj;
@@ -51,8 +59,17 @@ public class VoodooLoader {
 		if (modsFolder.isDirectory()) {
 			//Map<String, ModInfo.Version> id = new HashMap<>();
 			
+			int totalFiles = modsFolder.list().length;
+			progress.msg = "Starting...";
+			progress.max(totalFiles+1);
+			progressConsumer.accept(progress);
+			
 			for(File modLock : modsFolder.listFiles()) {
+				progress.value++;
 				if (modLock.isFile() && (modLock.getName().endsWith(".lock.hjson") || modLock.getName().endsWith(".lock.json"))) {
+					progress.msg = "Loading "+modLock.getName();
+					progressConsumer.accept(progress);
+					
 					System.out.println("Loading in '"+modLock.getName()+"'...");
 					try {
 						System.out.println("HJSON output: "+org.hjson.JsonValue.readHjson(new FileReader(modLock)).toString());
@@ -141,9 +158,12 @@ public class VoodooLoader {
 							//item.selection = selection;
 							pack.mods.add(selection);
 						} else {
+							progress.msg = "dropping unknown provider "+provider;
+							progressConsumer.accept(progress);
 							System.out.println("DROPPING unknown provider "+provider);
 						}
 					} catch (Throwable t) {
+						//TODO: Tell progressConsumer about this?
 						System.out.println("Could not load mod into pack");
 						t.printStackTrace();
 						System.exit(-1);

@@ -56,6 +56,8 @@ import blue.endless.wtrader.DependencyResolver;
 import blue.endless.wtrader.ModInfo;
 import blue.endless.wtrader.ModSelection;
 import blue.endless.wtrader.Modpack;
+import blue.endless.wtrader.ZipAccess;
+import blue.endless.wtrader.loader.CurseLoader;
 import blue.endless.wtrader.loader.VoodooLoader;
 import blue.endless.wtrader.provider.DirectModProvider;
 import blue.endless.wtrader.provider.ModProvider;
@@ -78,6 +80,7 @@ public class TraderGui extends JFrame {
 	private JTextArea descriptionField = new JTextArea();
 	
 	private JPanel cards = new JPanel(new CardLayout());
+	private ProgressPanel progress = new ProgressPanel();
 	
 	static Image jarImage;
 	static Image unknownImage;
@@ -131,6 +134,8 @@ public class TraderGui extends JFrame {
 		loader.onNewModpack = this::createModpack;
 		loader.onOpenModpack = this::openModpack;
 		cards.add(loader, "load");
+		
+		cards.add(progress, "progress");
 		
 		
 		SplinterBox mainPanel = new SplinterBox().withAxis(Axis.HORIZONTAL);
@@ -537,10 +542,33 @@ public class TraderGui extends JFrame {
 			
 			
 		} else {
-			if (f.getName().endsWith(".lock.pack.hjson") || f.getName().endsWith(".lock.pack.json")) { //Voodoo pack lockfile
+			if (f.getName().endsWith(".zip")) {
+				//Is it a curse pack?
+				if (ZipAccess.hasFile(f, "manifest.json")) {
+					try {
+						showCard("progress");
+						this.paint(this.getGraphics());
+						
+						Modpack pack = CurseLoader.load(f, progress::accept);
+						this.loadPack(pack);
+						showCard("main");
+					} catch (IOException ex) {
+						ex.printStackTrace();
+						showCard("load");
+					}
+				}
+			} else if (f.getName().endsWith(".lock.pack.hjson") || f.getName().endsWith(".lock.pack.json")) { //Voodoo pack lockfile
 				try {
-					
-					Modpack pack = VoodooLoader.load(f);
+					showCard("progress");
+					//this.repaint(1);
+					this.paint(this.getGraphics());
+					Thread.yield();
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					Modpack pack = VoodooLoader.load(f, progress::accept);
 					pack.setSaveLocation(null);
 					
 					this.loadPack(pack);
@@ -549,6 +577,7 @@ public class TraderGui extends JFrame {
 					
 				} catch (IOException e) {
 					e.printStackTrace();
+					showCard("load");
 				}
 			} else if (f.getName().endsWith(".json")) {
 				try {
@@ -576,6 +605,7 @@ public class TraderGui extends JFrame {
 					showCard("main");
 				} catch (IOException | SyntaxError error) {
 					error.printStackTrace();
+					showCard("load");
 				}
 			}
 		}
