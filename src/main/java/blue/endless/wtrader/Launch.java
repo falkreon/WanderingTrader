@@ -1,10 +1,7 @@
 package blue.endless.wtrader;
 
-import java.time.Instant;
-
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.gui.TraderGui;
+import blue.endless.wtrader.provider.DirectModProvider;
 import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
@@ -15,6 +12,7 @@ public class Launch {
 	public static void main(String[] args) {
 		ModProvider.register("cache", CacheModProvider.instance());
 		ModProvider.register("curse", CurseModProvider.instance());
+		ModProvider.register("direct", DirectModProvider.instance());
 		
 		OptionParser optionParser = new OptionParser();
 		optionParser.accepts("nogui");
@@ -25,26 +23,6 @@ public class Launch {
 		//System.out.println(Jankson.builder().build().toJson(selection).toJson(JsonGrammar.JSON5));
 		
 		Modpack pack = new Modpack();
-		PackInfo info = pack.getInfo();
-		info.name = "untitled";
-		info.version = "1.0";
-		info.modLoader = "fabric";
-		info.loaderVersion = "0.7.8+build.187";
-		info.mcVersion = "1.15.2";
-		
-		ModInfo dummyMod = new ModInfo();
-		ModInfo.Version dummyVersion = new ModInfo.Version();
-		dummyVersion.fileName = "dummyJar-1.8.1+MC1.15.2.jar";
-		dummyVersion.number = "1.8.1+MC1.15.2";
-		dummyVersion.timestamp = Instant.now().toEpochMilli();
-		Modpack.ModItem item = new Modpack.ModItem();
-		item.selection = new ModSelection();
-		item.selection.cachedVersion = dummyVersion;
-		pack.mods.add(item);
-		
-		Modpack.ModItem commentItem = new Modpack.ModItem();
-		commentItem.comment = "This is a comment.";
-		pack.mods.add(commentItem);
 		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");

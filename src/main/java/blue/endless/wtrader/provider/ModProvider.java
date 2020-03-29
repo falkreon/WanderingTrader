@@ -22,7 +22,7 @@ public abstract class ModProvider {
 		}
 		providers.put(id, provider);
 	}
-	
+
 	/**
 	 * If this provider has search functionality, return a list of partial ModInfo objects.
 	 * Each ModInfo may need further resolution to be a proper cache entry, but must at a minimum contain
@@ -47,17 +47,17 @@ public abstract class ModProvider {
 	 * @throws IOException if a network error occurs or the resource is unavailable
 	 */
 	public ModInfo update(@Nonnull ModInfo mod) throws IOException {
-		return fetch(mod.providerId);
+		return fetch(mod.providerModId);
 	}
 	
 	/**
 	 * Grabs a ModInfo for this specific ModInfo
-	 * @param providerId
+	 * @param providerFileId
 	 * @return
 	 * @throws IOException
 	 */
 	@Nonnull
-	public abstract ModInfo fetch(String providerId) throws IOException;
+	public abstract ModInfo fetch(String providerFileId) throws IOException;
 	
 	/**
 	 * If this ModInfo.Version doesn't have critical information like a number, timestamp, or downloadURL,
@@ -68,4 +68,33 @@ public abstract class ModProvider {
 	 */
 	@Nonnull
 	public abstract ModInfo.Version resolve(ModInfo.Dependency unresolved, String mcversion) throws IOException;
+	
+	
+	
+	public static String modVersionFromFileName(String fileName, String fallback) {
+		int firstSeparator = fileName.indexOf('-');
+		if (firstSeparator!=-1 && fileName.length()>firstSeparator+1) {
+			String maybeVersionNumber = fileName.substring(firstSeparator+1);
+			if (maybeVersionNumber.endsWith(".jar") || maybeVersionNumber.endsWith(".zip")) {
+				maybeVersionNumber = maybeVersionNumber.substring(0, maybeVersionNumber.length()-4);
+			}
+			
+			if (!maybeVersionNumber.isEmpty()) {
+				return maybeVersionNumber;
+			}
+		}
+		
+		return fallback.trim().replace(" ", "_");
+	}
+	
+	public static String modNameFromFileName(String fileName) {
+		int firstSeparator = fileName.indexOf('-');
+		if (firstSeparator==-1) {
+			int lastDot = fileName.lastIndexOf('.');
+			return (lastDot==-1) ? fileName : fileName.substring(0,lastDot);
+			
+		} else {
+			return fileName.substring(0, firstSeparator);
+		}
+	}
 }

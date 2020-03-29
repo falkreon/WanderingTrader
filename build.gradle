@@ -19,6 +19,7 @@ dependencies {
 	implementation 'blue.endless:splinter:0.0.1-1';
 	implementation 'net.sf.jopt-simple:jopt-simple:6.0-alpha-3';
 	implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.1_beta';
+	implementation 'org.hjson:hjson:3.0.0'; //For importing voodoo files
 }
 
 license {

@@ -10,6 +10,7 @@ import java.util.Set;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.provider.ModProvider;
 import blue.endless.wtrader.provider.cache.CacheModProvider;
 
 public class CurseModInfo {
@@ -84,6 +85,8 @@ public class CurseModInfo {
 		public ModInfo.Version toVersion() {
 			ModInfo.Version version = new ModInfo.Version();
 			version.modId = id;
+			version.providerModId = null;
+			version.providerFileId = id;
 			version.fileName = fileName;
 			version.downloadUrl = downloadUrl;
 			version.timestamp = Instant.parse(fileDate).toEpochMilli();
@@ -92,7 +95,7 @@ public class CurseModInfo {
 				version.mcVersion = gameVersion.get(0);
 			}
 			
-			version.number = CurseModProvider.extractModVersion(fileName, displayName);
+			version.number = ModProvider.modVersionFromFileName(fileName, displayName);
 			
 			for(Module module: modules) {
 				if (module.foldername!=null && module.foldername.equals("mcmod.info")) {
@@ -139,7 +142,7 @@ public class CurseModInfo {
 		result.id = slug;
 		result.name = name;
 		result.provider = "curse";
-		result.providerId = id;
+		result.providerModId = id;
 		
 		StringBuilder resultAuthors = new StringBuilder();
 		for(Attribution attribution : authors) {
@@ -155,6 +158,7 @@ public class CurseModInfo {
 		
 		for(Release release : latestFiles) {
 			ModInfo.Version version = release.toVersion();
+			version.providerModId = id;
 			result.versions.add(version);
 			
 			for(String s : result.loaders) {

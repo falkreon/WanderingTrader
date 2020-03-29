@@ -8,7 +8,7 @@ public class ModSelection {
 	public String version;
 	public Constraint constraint;
 	public long timestamp;
-	public transient ModInfo cachedInfo;
+	public ModInfo info;
 	public transient ModInfo.Version cachedVersion;
 	
 	public static ModSelection fromModpackLine(String s) {

@@ -199,6 +199,18 @@ public class CurseModProvider extends ModProvider {
 			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
 		}
 	}
+	
+	public ModInfo.Version fetch(String providerModId, String providerFileId) throws IOException {
+		JsonElement elem = RestQuery.start("https://addons-ecs.forgesvc.net/api/v2/addon/"+providerModId+"/file/"+providerFileId);
+		//System.out.println(elem.toJson(JsonGrammar.JSON5));
+		if (elem instanceof JsonObject) {
+			ModInfo.Version version = Jankson.builder().build().fromJson((JsonObject) elem, CurseModInfo.Release.class).toVersion();
+			
+			return version;
+		} else {
+			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
+		}
+	}
 
 	@Override
 	public ModInfo.Version resolve(ModInfo.Dependency unresolved, String mcversion) throws IOException {
@@ -245,21 +257,5 @@ public class CurseModProvider extends ModProvider {
 		} else {
 			throw new IOException("Server response was valid json but not a JsonObject (was a "+elem.getClass().getSimpleName()+").");
 		}*/
-	}
-	
-	public static String extractModVersion(String fileName, String displayName) {
-		int firstSeparator = fileName.indexOf('-');
-		if (firstSeparator!=-1 && fileName.length()>firstSeparator+1) {
-			String maybeVersionNumber = fileName.substring(firstSeparator+1);
-			if (maybeVersionNumber.endsWith(".jar") || maybeVersionNumber.endsWith(".zip")) {
-				maybeVersionNumber = maybeVersionNumber.substring(0, maybeVersionNumber.length()-4);
-			}
-			
-			if (!maybeVersionNumber.isEmpty()) {
-				return maybeVersionNumber;
-			}
-		}
-		
-		return displayName.trim().replace(" ", "_");
 	}
 }

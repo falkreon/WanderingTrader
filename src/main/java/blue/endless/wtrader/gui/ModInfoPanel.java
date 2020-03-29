@@ -9,6 +9,7 @@ import javax.swing.JLabel;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.ModSelection;
 import blue.endless.wtrader.Modpack;
 
 public class ModInfoPanel extends SplinterBox {
@@ -32,7 +33,7 @@ public class ModInfoPanel extends SplinterBox {
 		setMod(mod);
 	}
 
-	public ModInfoPanel(Modpack.ModItem item) {
+	public ModInfoPanel(ModSelection item) {
 		this.withAxis(Axis.VERTICAL);
 		
 		name.setFont(this.getFont().deriveFont(36.0f));
@@ -73,25 +74,25 @@ public class ModInfoPanel extends SplinterBox {
 		this.description.setText(desc);
 	}
 	
-	public void setModItem(Modpack.ModItem item) {
+	public void setModItem(ModSelection item) {
 		System.out.println("item: "+Jankson.builder().build().toJson(item).toJson(JsonGrammar.JSON5));
-		System.out.println("cachedVersion: "+Jankson.builder().build().toJson(item.selection.cachedVersion).toJson(JsonGrammar.JSON5));
-		System.out.println("cachedInfo: "+Jankson.builder().build().toJson(item.selection.cachedInfo).toJson(JsonGrammar.JSON5));
+		System.out.println("cachedVersion: "+Jankson.builder().build().toJson(item.cachedVersion).toJson(JsonGrammar.JSON5));
+		System.out.println("cachedInfo: "+Jankson.builder().build().toJson(item.info).toJson(JsonGrammar.JSON5));
 		
-		if (item.selection.cachedVersion!=null) {
-			this.name.setText(item.selection.cachedVersion.fileName);
+		if (item.cachedVersion!=null) {
+			this.name.setText(item.cachedVersion.fileName);
 		}
 		
-		if (item.selection.cachedInfo==null) {
-			this.name.setText(item.selection.modCacheId);
+		if (item.info==null) {
+			this.name.setText(item.modCacheId);
 		} else {
-			this.mod = item.selection.cachedInfo;
+			this.mod = item.info;
 			this.name.setText("XXXXXXXXXXXXXXXXXX");
 			System.out.println("Setting name from CachedInfo");
 			System.out.println(Thread.currentThread().getName());
 			//this.name.setText(item.selection.cachedInfo.name);
-			this.authors.setText(item.selection.cachedInfo.authors);
-			this.description.setText(item.selection.cachedInfo.description);
+			this.authors.setText(item.info.authors);
+			this.description.setText(item.info.description);
 			this.repaint();
 		}
 	}

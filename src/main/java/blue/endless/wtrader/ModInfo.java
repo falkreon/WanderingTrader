@@ -24,7 +24,7 @@ public class ModInfo {
 	/** A string identifier, all lower-case, which indicates the type of REST query response to expect. Usually "curse". */
 	public String provider;
 	/** An implementation-specific string which the provider can use to uniquely identify the mod */
-	public String providerId;
+	public String providerModId;
 	
 	/** A URI which can retrieve project and update information to populate this object. */
 	public String fetchUrl;
@@ -37,6 +37,9 @@ public class ModInfo {
 	public static class Version {
 		/** Same as `id` for the containing object; the cache-id for the mod this Version is for */
 		public String modId;
+		
+		public String providerModId;
+		public String providerFileId;
 		
 		/** The version number or flavor. Usually a semVer string, but is not required to be. */
 		public String number;
