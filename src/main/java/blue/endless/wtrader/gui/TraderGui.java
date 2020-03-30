@@ -9,20 +9,19 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -30,25 +29,26 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 
 import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.SyntaxError;
 import blue.endless.splinter.LayoutElementMetrics;
@@ -59,9 +59,6 @@ import blue.endless.wtrader.Modpack;
 import blue.endless.wtrader.ZipAccess;
 import blue.endless.wtrader.loader.CurseLoader;
 import blue.endless.wtrader.loader.VoodooLoader;
-import blue.endless.wtrader.provider.DirectModProvider;
-import blue.endless.wtrader.provider.ModProvider;
-import blue.endless.wtrader.provider.curse.CurseModProvider;
 
 public class TraderGui extends JFrame {
 	private static final long serialVersionUID = 3683901432454302841L;
@@ -81,12 +78,115 @@ public class TraderGui extends JFrame {
 	
 	private JPanel cards = new JPanel(new CardLayout());
 	private ProgressPanel progress = new ProgressPanel();
+	private JMenuBar menuBar = new JMenuBar();
+	
+	private Action saveAction = new AbstractAction("Save") {
+		private static final long serialVersionUID = -6092381200788056073L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (pack==null || pack.getSaveLocation()==null) {
+				//this.setEnabled(false);
+				return;
+			}
+			
+			pack.save();
+		}
+		
+		//@Override
+		//public boolean isEnabled() {
+		//	return (pack!=null && pack.getSaveLocation()!=null);
+		//}
+	};
+	
+	private Action saveAsAction = new AbstractAction("Save As...") {
+		private static final long serialVersionUID = 4450882891221795725L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (pack==null) {
+				this.setEnabled(false);
+				return;
+			}
+			
+			//TOOD: Show a save dialog
+			
+			
+			JFileChooser chooser = new JFileChooser();
+			chooser.setCurrentDirectory(new File("."));
+			chooser.setDialogTitle("Create New Modpack");
+			chooser.setApproveButtonText("Create");
+			
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setFileFilter(new FileFilter() {
+
+				@Override
+				public boolean accept(File file) {
+					return file.getName().endsWith(".json");
+				}
+
+				@Override
+				public String getDescription() {
+					return "JSON Files";
+				}
+				
+			});
+			chooser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent fileEvent) {
+					if (fileEvent.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
+						//System.out.println("Selected: "+test.getSelectedFile());
+						File f = chooser.getSelectedFile();
+						pack.saveAs(f);
+					}
+				}
+			});
+			chooser.setSelectedFile(new File(".", pack.packInfo.name.toLowerCase(Locale.ROOT).replace(' ','_')+".json"));
+			chooser.showSaveDialog(TraderGui.this);
+		}
+		
+		//@Override
+		//public boolean isEnabled() {
+		//	return (pack!=null);
+		//}
+	};
+	
+	private Action closeAction = new AbstractAction("Close") {
+		private static final long serialVersionUID = -3812793752411022325L;
+
+		@Override
+		public void actionPerformed(ActionEvent event) {
+			pack = null;
+			this.setEnabled(false);
+			saveAction.setEnabled(false);
+			saveAsAction.setEnabled(false);
+			
+			setTitle("Wandering Trader");
+			showCard("load");
+		}
+		
+		//@Override
+		//public boolean isEnabled() {
+		//	return (pack!=null);
+		//}
+	};
 	
 	static Image jarImage;
 	static Image unknownImage;
 	
-	public TraderGui(Modpack pack) {
-		this.pack = pack;
+	public TraderGui() {
+		this.pack = null;
+		this.setJMenuBar(menuBar);
+		JMenu fileMenu = new JMenu("File");
+		fileMenu.setMnemonic('f');
+		fileMenu.add(saveAction);
+		saveAction.setEnabled(false);
+		fileMenu.add(saveAsAction);
+		saveAsAction.setEnabled(false);
+		fileMenu.add(closeAction);
+		closeAction.setEnabled(false);
+		menuBar.add(fileMenu);
+		
 		//try {
 			
 			//SynthLookAndFeel laf = new SynthLookAndFeel();
@@ -141,19 +241,20 @@ public class TraderGui extends JFrame {
 		SplinterBox mainPanel = new SplinterBox().withAxis(Axis.HORIZONTAL);
 		cards.add(mainPanel, "main");
 		
+		
 		SplinterBox packInfo = new SplinterBox();
 		packInfo.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
 		packInfo.setPreferredSize(new Dimension(600, Integer.MAX_VALUE));
 		packInfo.setMinimumSize(new Dimension(400, 400));
 		JIcon packIcon = new JIcon(Toolkit.getDefaultToolkit().getImage("icon.png"));
 		modLoaderMenu = new JComboBox<String>(new String[] {"fabric", "forge"});
-		modLoaderMenu.setSelectedItem(pack.getInfo().modLoader);
+		//modLoaderMenu.setSelectedItem(pack.getInfo().modLoader);
 		mcVersionMenu = new JComboBox<>(new String[] {"1.15.2", "1.15.1", "1.15", "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14", "1.12.2", "1.12"});
 		mcVersionMenu.setEditable(true);
-		mcVersionMenu.setSelectedItem(pack.getInfo().mcVersion);
+		//mcVersionMenu.setSelectedItem(pack.getInfo().mcVersion);
 		loaderVersionMenu = new JComboBox<>(new String[] {"0.7.8+build.184", "0.7.8+build.187"});
 		loaderVersionMenu.setEditable(true);
-		loaderVersionMenu.setSelectedItem(pack.getInfo().loaderVersion);
+		//loaderVersionMenu.setSelectedItem(pack.getInfo().loaderVersion);
 		
 		LayoutElementMetrics iconMetrics = new LayoutElementMetrics(0, 0);
 		iconMetrics.cellsX = 2;
@@ -347,6 +448,8 @@ public class TraderGui extends JFrame {
 	
 	private void syncMods() {
 		modListModel.clear();
+		if (pack==null) return;
+		
 		for(ModSelection item : pack.mods) {
 			modListModel.addElement(item);
 		}
@@ -458,7 +561,7 @@ public class TraderGui extends JFrame {
 		int scaledSize = (int) ( points * (dpi/72.0) );
 		return f.deriveFont(scaledSize);
 	}
-	
+	/*
 	public static class ModItemView extends JPanel {
 		private static final long serialVersionUID = 3064929838898888378L;
 		
@@ -493,12 +596,6 @@ public class TraderGui extends JFrame {
 			if (fileName.lastIndexOf('.')!=-1) extension = fileName.substring(fileName.lastIndexOf('.')+1);
 			
 			fileItem.setIcon(new ImageIcon(FileIcons.getIcon(extension)));
-			/*
-			if (item.selection.cachedVersion.fileName.endsWith(".jar")) {
-				fileItem.setIcon(new ImageIcon(TraderGui.jarImage));
-			} else {
-				fileItem.setIcon(new ImageIcon(TraderGui.unknownImage));
-			}*/
 		}
 		
 		public void setComment(String comment) {
@@ -507,7 +604,7 @@ public class TraderGui extends JFrame {
 			fileItem.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
 			fileItem.setText(comment);
 		}
-	}
+	}*/
 	
 	public void loadPack(Modpack pack) {
 		this.pack = pack;
@@ -521,7 +618,14 @@ public class TraderGui extends JFrame {
 		descriptionField.setText(pack.getInfo().description);
 		
 		syncMods();
-		showCard("main");
+		
+		this.setTitle("Wandering Trader - "+pack.packInfo.name+" - "+pack.packInfo.version);
+		menuBar.setEnabled(true);
+		saveAsAction.setEnabled(true);
+		closeAction.setEnabled(true);
+		if (pack.getSaveLocation()!=null) saveAction.setEnabled(true);
+		
+		//showCard("main");
 	}
 	
 	private void createModpack(File f) {
@@ -554,6 +658,7 @@ public class TraderGui extends JFrame {
 						showCard("main");
 					} catch (IOException ex) {
 						ex.printStackTrace();
+						JOptionPane.showMessageDialog(this, ex.getMessage(), "Error loading Curse pack", JOptionPane.ERROR_MESSAGE);
 						showCard("load");
 					}
 				}
@@ -573,23 +678,39 @@ public class TraderGui extends JFrame {
 					
 					this.loadPack(pack);
 					showCard("main");
-					pack.saveAs(new File(".", "pack_import.json"));
+					//pack.saveAs(new File(".", "pack_import.json"));
 					
 				} catch (IOException e) {
 					e.printStackTrace();
+					JOptionPane.showMessageDialog(this, e.getMessage(), "Error loading Voodoo pack", JOptionPane.ERROR_MESSAGE);
 					showCard("load");
 				}
 			} else if (f.getName().endsWith(".json")) {
 				try {
 					Jankson jankson = Jankson.builder().build();
 					
+					JsonObject obj = jankson.load(f);
+					Integer curseManifestVersion = (obj.get(Integer.class, "manifestVersion"));
+					if (curseManifestVersion!=null) {
+						try {
+							showCard("progress");
+							Modpack pack = CurseLoader.load(f, progress::accept);
+							this.loadPack(pack);
+							showCard("main");
+							return;
+						} catch (Throwable t) {
+							JOptionPane.showMessageDialog(this, t.getMessage(), "Error loading Curse pack", JOptionPane.ERROR_MESSAGE);
+							showCard("load");
+							return;
+						}
+					}
+					
+					
 					Modpack pack = jankson.fromJson(jankson.load(f), Modpack.class);
 					pack.setSaveLocation(f);
 					
 					//Re-cache versions
 					for(ModSelection selection : pack.mods) {
-						//if (modItem.selection==null) continue;
-						
 						ModInfo modInfo = selection.info;
 						for(ModInfo.Version version : modInfo.versions) {
 							if (version.timestamp==selection.timestamp) {
@@ -605,6 +726,7 @@ public class TraderGui extends JFrame {
 					showCard("main");
 				} catch (IOException | SyntaxError error) {
 					error.printStackTrace();
+					JOptionPane.showMessageDialog(this, error.getMessage(), "Error loading WT pack", JOptionPane.ERROR_MESSAGE);
 					showCard("load");
 				}
 			}

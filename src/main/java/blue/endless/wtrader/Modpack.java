@@ -7,13 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
-import blue.endless.jankson.annotation.Deserializer;
-import blue.endless.jankson.annotation.Serializer;
-import blue.endless.jankson.api.Marshaller;
 import blue.endless.jankson.api.SyntaxError;
 
 public class Modpack {
@@ -84,6 +78,10 @@ public class Modpack {
 	
 	public void setSaveLocation(File f) {
 		this.location = f;
+	}
+
+	public File getSaveLocation() {
+		return location;
 	}
 	
 	/*

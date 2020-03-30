@@ -22,13 +22,11 @@ public class Launch {
 		//ModSelection selection = ModSelection.fromModpackLine("xycraft >= 1.8.2 @2011-12-03T10:15:30Z");
 		//System.out.println(Jankson.builder().build().toJson(selection).toJson(JsonGrammar.JSON5));
 		
-		Modpack pack = new Modpack();
-		
 		if (options.has("nogui")) {
 			System.out.println("Running in console / headless mode.");
 		} else {
 			System.out.println("Running in gui mode. Use --nogui for headless / console mode.");
-			TraderGui gui = new TraderGui(pack);
+			TraderGui gui = new TraderGui();
 			gui.setVisible(true);
 		}
 	}

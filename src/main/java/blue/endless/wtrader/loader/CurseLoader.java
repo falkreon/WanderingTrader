@@ -35,12 +35,15 @@ public class CurseLoader {
 		return null;
 	}
 	
-	private static Modpack unpack(JsonObject obj, Consumer<Progress> progressConsumer) {
+	private static Modpack unpack(JsonObject obj, Consumer<Progress> progressConsumer) throws IOException {
 		Progress progress = Progress.of("Loading modpack info...");
 		progress.max(100);
 		progressConsumer.accept(progress);
 		
 		Modpack pack = new Modpack();
+		
+		Integer manifestVersion = obj.getInt("manifestVersion", 1);
+		if (manifestVersion>1) throw new IOException("Cannot load manifests greater than version 1 (version was "+manifestVersion+")");
 		
 		pack.packInfo.name = obj.get(String.class, "name");
 		pack.packInfo.version = obj.get(String.class, "version");
