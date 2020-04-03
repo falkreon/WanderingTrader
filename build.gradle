@@ -1,7 +1,7 @@
 plugins {
 	id 'java';
 	id 'eclipse';
-	id 'net.minecrell.licenser' version '0.4.1';
+	//id 'net.minecrell.licenser' version '0.4.1';
 	id 'com.github.johnrengelman.shadow' version '5.2.0';
 }
 
@@ -22,11 +22,11 @@ dependencies {
 	implementation 'org.hjson:hjson:3.0.0'; //For importing voodoo files
 }
 
-license {
-	header = file('LICENSE');
-	
-	include '**/*.java';
-}
+//license {
+//	header = file('LICENSE');
+//	
+//	include '**/*.java';
+//}
 
 shadowJar {
 	manifest {

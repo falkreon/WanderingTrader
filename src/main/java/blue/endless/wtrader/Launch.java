@@ -19,6 +19,8 @@ public class Launch {
 		
 		OptionSet options = optionParser.parse(args);
 		
+		ModLoaders.instance();
+		
 		//ModSelection selection = ModSelection.fromModpackLine("xycraft >= 1.8.2 @2011-12-03T10:15:30Z");
 		//System.out.println(Jankson.builder().build().toJson(selection).toJson(JsonGrammar.JSON5));
 		

@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
@@ -25,6 +26,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -54,6 +56,7 @@ import blue.endless.jankson.api.SyntaxError;
 import blue.endless.splinter.LayoutElementMetrics;
 import blue.endless.wtrader.DependencyResolver;
 import blue.endless.wtrader.ModInfo;
+import blue.endless.wtrader.ModLoaders;
 import blue.endless.wtrader.ModSelection;
 import blue.endless.wtrader.Modpack;
 import blue.endless.wtrader.ZipAccess;
@@ -248,13 +251,29 @@ public class TraderGui extends JFrame {
 		packInfo.setMinimumSize(new Dimension(400, 400));
 		JIcon packIcon = new JIcon(Toolkit.getDefaultToolkit().getImage("icon.png"));
 		modLoaderMenu = new JComboBox<String>(new String[] {"fabric", "forge"});
+		modLoaderMenu.setSelectedItem("fabric");
+		modLoaderMenu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				updateLoaderSelection();
+			}
+		});
 		//modLoaderMenu.setSelectedItem(pack.getInfo().modLoader);
-		mcVersionMenu = new JComboBox<>(new String[] {"1.15.2", "1.15.1", "1.15", "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14", "1.12.2", "1.12"});
+		DefaultComboBoxModel<String> mcVersionModel = new DefaultComboBoxModel<>();
+		mcVersionMenu = new JComboBox<>(mcVersionModel);
+		mcVersionMenu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateMCSelection();
+			}
+		});
+		
 		mcVersionMenu.setEditable(true);
 		//mcVersionMenu.setSelectedItem(pack.getInfo().mcVersion);
-		loaderVersionMenu = new JComboBox<>(new String[] {"0.7.8+build.184", "0.7.8+build.187"});
+		loaderVersionMenu = new JComboBox<>(new DefaultComboBoxModel<String>());
 		loaderVersionMenu.setEditable(true);
 		//loaderVersionMenu.setSelectedItem(pack.getInfo().loaderVersion);
+		updateLoaderSelection();
 		
 		LayoutElementMetrics iconMetrics = new LayoutElementMetrics(0, 0);
 		iconMetrics.cellsX = 2;
@@ -457,6 +476,44 @@ public class TraderGui extends JFrame {
 			modsList.invalidate();
 			modsList.repaint();
 		}
+	}
+	
+	public void updateLoaderSelection() {
+		if (modLoaderMenu.getSelectedItem()==null) {
+			modLoaderMenu.setSelectedItem("fabric");
+		}
+		String loader = modLoaderMenu.getSelectedItem().toString();
+		
+		List<String> mcVersions = ModLoaders.instance().getMCVersions(loader);
+		DefaultComboBoxModel<String> mcVersionModel = (DefaultComboBoxModel<String>) mcVersionMenu.getModel();
+		mcVersionModel.removeAllElements();
+		for(String s : mcVersions) {
+			mcVersionModel.addElement(s);
+		}
+		if (mcVersionMenu.getSelectedItem()==null) {
+			if (!mcVersions.isEmpty()) mcVersionMenu.setSelectedIndex(0);
+		}
+		
+		updateMCSelection();
+	}
+	
+	public void updateMCSelection() {
+		String loader = "";
+		String mcVersion = "";
+		if (modLoaderMenu.getSelectedItem()!=null) {
+			loader = modLoaderMenu.getSelectedItem().toString();
+		}
+		if (mcVersionMenu.getSelectedItem()!=null) {
+			mcVersion = mcVersionMenu.getSelectedItem().toString();
+		}
+		
+		List<String> loaderVersions = ModLoaders.instance().getLoaderVersions(loader, mcVersion);
+		DefaultComboBoxModel<String> loaderVersionModel = (DefaultComboBoxModel<String>) loaderVersionMenu.getModel();
+		loaderVersionMenu.removeAllItems();
+		for(String s : loaderVersions) {
+			loaderVersionModel.addElement(s);
+		}
+		loaderVersionMenu.setSelectedItem(ModLoaders.instance().getRecommendedVersion(loader, mcVersion));
 	}
 	
 	private static class ModItemRenderer extends DefaultListCellRenderer {
