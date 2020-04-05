@@ -34,13 +34,13 @@ public class ModSelectPanel extends JPanel {
 	private static Jankson jankson = Jankson.builder().build();
 	
 	public ModSelectPanel() {
-		tabs.add(cacheTab, "Saved");
+		//tabs.add(cacheTab, "Saved");
 		tabs.add(createCurseTab(), "Curse");
 		
 		this.setLayout(new BorderLayout());
 		this.add(tabs, BorderLayout.CENTER);
 		
-		tabs.setSelectedIndex(1); //TODO: Only focus Curse tab if there's nothing in the cache
+		//tabs.setSelectedIndex(1); //TODO: Only focus Curse tab if there's nothing in the cache
 	}
 	
 	private JPanel createCurseTab() {
@@ -94,7 +94,7 @@ public class ModSelectPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				List<ModInfo> results = ModProvider.get("curse").search(curseSearchField.getText());
+				List<ModInfo> results = ModProvider.get("curse").search(curseSearchField.getText(), null, null);
 				
 				curseModListModel.clear();
 				int i = 0;

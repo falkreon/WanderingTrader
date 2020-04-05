@@ -12,6 +12,7 @@ public class JIcon extends JComponent {
 	private static final long serialVersionUID = 8511361780756320216L;
 	
 	private Image image;
+	private int fixedSize = 128;
 	
 	public JIcon() {
 		
@@ -30,9 +31,14 @@ public class JIcon extends JComponent {
 		return this.image;
 	}
 	
+	public JIcon setSize(int sz) {
+		this.fixedSize = sz;
+		return this;
+	}
+	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(128,128);
+		return new Dimension(fixedSize, fixedSize);
 		
 		//if (image==null) return new Dimension(16, 16);
 		
@@ -57,8 +63,9 @@ public class JIcon extends JComponent {
 		
 		if (image!=null) {
 			Dimension d = this.getSize();
-			int sz = Math.min(d.width, d.height);
-			if (sz>128) sz=128;
+			//int sz = Math.min(d.width, d.height);
+			//if (sz>fixedSize) sz=fixedSize;
+			int sz = fixedSize;
 			int xofs = (d.width-sz) / 2;
 			int yofs = (d.height-sz) / 2;
 			//TODO: Insets

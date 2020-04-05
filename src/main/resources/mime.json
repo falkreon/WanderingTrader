@@ -1,6 +1,7 @@
  {
  	"jar" : "application/java-archive",
  	"zip" : "application/zip",
+ 	"litemod" : "application/x-liteloader",
  	"txt" : "text/plain",
  	"ini" : "text/plain",
  	"json": "application/json",

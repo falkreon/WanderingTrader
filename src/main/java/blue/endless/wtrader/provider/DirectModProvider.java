@@ -19,7 +19,7 @@ public class DirectModProvider extends ModProvider {
 	private DirectModProvider() {}
 	
 	@Override
-	public List<ModInfo> search(String keyword) {
+	public List<ModInfo> search(String keyword, String loader, String mcVersion) {
 		return new ArrayList<>(); //Cannot search a direct provider
 	}
 

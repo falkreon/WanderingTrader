@@ -92,7 +92,7 @@ public class CurseModProvider extends ModProvider {
 	}
 	
 	@Override
-	public List<ModInfo> search(String keyword) {
+	public List<ModInfo> search(String keyword, String loader, String mcVersion) {
 		List<ModInfo> searchResults = new ArrayList<>();
 		
 		try {
@@ -117,6 +117,9 @@ public class CurseModProvider extends ModProvider {
 						if (categoryId==null || categoryId.intValue()!=MOD_CATEGORY_ID) continue;
 						
 						ModInfo info = jankson.fromJson((JsonObject) result, CurseModInfo.class).toModInfo();
+						if (loader!=null && !info.loaders.contains(loader)) continue;
+						//TODO: Find an acceptable version
+						
 						searchResults.add(info);
 					}
 				}
@@ -126,7 +129,9 @@ public class CurseModProvider extends ModProvider {
 				if (categoryId==null || categoryId.intValue()!=MOD_CATEGORY_ID) return searchResults;
 				
 				ModInfo info = jankson.fromJson((JsonObject) result, CurseModInfo.class).toModInfo();
-				searchResults.add(info);
+				if (loader==null || info.loaders.contains(loader)) {
+					searchResults.add(info);
+				}
 			}
 			
 		} catch (IOException error) {

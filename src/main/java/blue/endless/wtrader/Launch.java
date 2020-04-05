@@ -3,14 +3,12 @@ package blue.endless.wtrader;
 import blue.endless.wtrader.gui.TraderGui;
 import blue.endless.wtrader.provider.DirectModProvider;
 import blue.endless.wtrader.provider.ModProvider;
-import blue.endless.wtrader.provider.cache.CacheModProvider;
 import blue.endless.wtrader.provider.curse.CurseModProvider;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 public class Launch {
 	public static void main(String[] args) {
-		ModProvider.register("cache", CacheModProvider.instance());
 		ModProvider.register("curse", CurseModProvider.instance());
 		ModProvider.register("direct", DirectModProvider.instance());
 		

@@ -102,11 +102,8 @@ public class TraderGui extends JFrame {
 		//}
 	};
 	
-	private Action saveAsAction = new AbstractAction("Save As...") {
-		private static final long serialVersionUID = 4450882891221795725L;
+	private Action saveAsAction = new SimpleAction("Save As...", ()->{
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
 			if (pack==null) {
 				this.setEnabled(false);
 				return;
@@ -146,13 +143,7 @@ public class TraderGui extends JFrame {
 			});
 			chooser.setSelectedFile(new File(".", pack.packInfo.name.toLowerCase(Locale.ROOT).replace(' ','_')+".json"));
 			chooser.showSaveDialog(TraderGui.this);
-		}
-		
-		//@Override
-		//public boolean isEnabled() {
-		//	return (pack!=null);
-		//}
-	};
+	});
 	
 	private Action closeAction = new AbstractAction("Close") {
 		private static final long serialVersionUID = -3812793752411022325L;
@@ -426,6 +417,10 @@ public class TraderGui extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent event) {
+				if (addModPanel.curseModList.getSelectedValue()==null) {
+					showCard("main");
+					return;
+				}
 				ModInfo mod = addModPanel.curseModList.getSelectedValue();
 				System.out.println("Adding "+mod.id+" to pack.");
 				//Pick the right version for this pack

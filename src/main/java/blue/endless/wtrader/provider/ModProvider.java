@@ -38,7 +38,7 @@ public abstract class ModProvider {
 	 * @return a list of [potentially partial] ModInfo objects which match the keyword in some way
 	 */
 	@Nonnull
-	public abstract List<ModInfo> search(@Nonnull String keyword);
+	public abstract List<ModInfo> search(@Nonnull String keyword, String loader, String mcVersion);
 	
 	/**
 	 * Performs a query on a full or partial ModInfo, producing completed or updated information.

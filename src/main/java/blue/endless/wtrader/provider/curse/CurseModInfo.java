@@ -1,17 +1,11 @@
 package blue.endless.wtrader.provider.curse;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonGrammar;
 import blue.endless.wtrader.ModInfo;
 import blue.endless.wtrader.provider.ModProvider;
-import blue.endless.wtrader.provider.cache.CacheModProvider;
 
 public class CurseModInfo {
 	/** The unique numeric ID for the mod */
